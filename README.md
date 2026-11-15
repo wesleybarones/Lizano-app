@@ -21,7 +21,7 @@ Sem as chaves do Supabase o app abre no **modo demonstração**, com dados de ex
 ## Ligar no Supabase (uma vez)
 
 1. Crie um projeto em [supabase.com](https://supabase.com) (região São Paulo).
-2. **SQL Editor**: cole e rode o arquivo `supabase/migrations/001_inicial.sql`.
+2. **SQL Editor**: cole e rode, em ordem, os arquivos de `supabase/migrations/` (001, 002…).
 3. **Authentication › Sign In / Providers › Email**: desligue *Confirm email*
    (as revendedoras entram com o login criado pelo dono, sem e-mail de confirmação).
 4. **Authentication › Users › Add user**: crie o usuário do dono (e-mail e senha), marcando *Auto Confirm*.
@@ -51,7 +51,8 @@ Cada marca só enxerga os próprios dados (regras de acesso no banco, *Row Level
 
 - **Vendido** = soma do preço das peças marcadas como vendidas
 - **Comissão** = % da revendedora × vendido
-- **Bônus** = valor fixo quando o vendido atinge a meta (meta 0 = sem bônus)
+- **Bônus** = valor fixo quando a revendedora bate a meta (meta 0 = sem bônus). A meta é por
+  **quantidade de peças vendidas** (padrão) ou por **valor vendido**; o dono escolhe para cada revendedora
 - **A receber** = vendido − comissão − bônus + ajuste do dono
 - Até o acerto, vale o preço atual da peça (mudou o preço, a revendedora vê na hora).
   No acerto, preços e regras ficam congelados e as peças não vendidas voltam ao estoque.

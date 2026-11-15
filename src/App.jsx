@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { StoreProvider, useStore } from './store';
 import { Loading } from './components/ui';
 import Login from './pages/Login';
+import Perfil from './pages/Perfil';
 import Inicio from './pages/admin/Inicio';
 import Pecas from './pages/admin/Pecas';
 import PecaForm from './pages/admin/PecaForm';
@@ -38,6 +39,7 @@ function Routed() {
         <Route path="/maletas/:id/acerto" element={<Acerto />} />
         <Route path="/relatorios" element={<Relatorios />} />
         <Route path="/relatorios/abc" element={<CurvaABC />} />
+        <Route path="/perfil" element={<Perfil />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
@@ -48,6 +50,7 @@ function Routed() {
       <Route path="/vender" element={<Vender />} />
       <Route path="/numeros" element={<MeusNumeros />} />
       <Route path="/historico" element={<Historico />} />
+      <Route path="/perfil" element={<Perfil />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

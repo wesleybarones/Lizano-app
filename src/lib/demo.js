@@ -7,22 +7,23 @@
  */
 import { addDays, today } from './format';
 
-const KEY = 'barones-consignado-demo-v1';
+const KEY = 'barones-consignado-demo-v2';
 const listeners = new Set();
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
 const wait = (v) => new Promise((r) => setTimeout(() => r(structuredClone(v)), 120));
 
 function seed() {
-  const brand = { id: 'b1', name: 'Lizano' };
+  const brand = { id: 'b1', name: 'Lizano', logo_url: null };
   const admin = { id: 'u-dono', brand_id: 'b1', role: 'admin', name: 'Dono da Lizano', login: 'dono', active: true };
   const rev = (id, name, login, c, b, g) => ({
-    id, brand_id: 'b1', role: 'reseller', name, login, commission_pct: c, bonus_amount: b, goal_amount: g, active: true,
+    id, brand_id: 'b1', role: 'reseller', name, login, commission_pct: c, bonus_amount: b, goal_amount: g,
+    goal_type: 'pieces', active: true,
   });
   const profiles = [
     admin,
-    rev('u-carla', 'Carla Mendes', 'carla', 30, 50, 1000),
-    rev('u-juliana', 'Juliana Reis', 'juliana', 30, 50, 1000),
-    rev('u-patricia', 'Patrícia Lima', 'patricia', 25, 40, 800),
+    rev('u-carla', 'Carla Mendes', 'carla', 30, 50, 15),
+    rev('u-juliana', 'Juliana Reis', 'juliana', 30, 50, 15),
+    rev('u-patricia', 'Patrícia Lima', 'patricia', 25, 40, 12),
     rev('u-simone', 'Simone Alves', 'simone', 30, 0, 0),
   ];
   const pc = (id, code, name, cost, price, stock) => ({ id, brand_id: 'b1', code, name, photo_url: null, cost, price, stock_qty: stock });
@@ -47,7 +48,7 @@ function seed() {
       sent_at: addDays(t, -sentDaysAgo), due_at: addDays(t, -sentDaysAgo + 30),
       status: settled ? 'settled' : 'open', adjust_amount: 0,
       commission_pct: settled ? r.commission_pct : null, bonus_amount: settled ? r.bonus_amount : null,
-      goal_amount: settled ? r.goal_amount : null,
+      goal_amount: settled ? r.goal_amount : null, goal_type: settled ? r.goal_type : null,
       settled_at: settled ? `${addDays(t, -sentDaysAgo + 30)}T15:00:00Z` : null,
       paid_at: paid ? `${addDays(t, -sentDaysAgo + 32)}T15:00:00Z` : null,
     };
@@ -96,7 +97,7 @@ export function createDemoApi() {
   const isAdmin = () => me()?.role === 'admin';
   const meFull = () => {
     const p = me();
-    return p ? { ...p, brand_name: db.brand.name } : null;
+    return p ? { ...p, brand_name: db.brand.name, brand_logo: db.brand.logo_url || '' } : null;
   };
   const piece = (id) => db.pieces.find((p) => p.id === id);
   const kitFull = (k) => ({
@@ -129,6 +130,19 @@ export function createDemoApi() {
       },
       async current() {
         return wait(meFull());
+      },
+      async changePassword(password) {
+        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        me().password = password;
+        save();
+      },
+    },
+    brand: {
+      async save({ name, logo_url }) {
+        guardAdmin();
+        db.brand.name = name.trim();
+        db.brand.logo_url = logo_url || null;
+        save();
       },
     },
     pieces: {
@@ -180,6 +194,7 @@ export function createDemoApi() {
           name: r.name.trim(), login: r.login.trim(),
           commission_pct: Number(r.commission_pct) || 0, bonus_amount: Number(r.bonus_amount) || 0,
           goal_amount: Number(r.goal_amount) || 0,
+          goal_type: r.goal_type === 'value' ? 'value' : 'pieces',
         };
         if (r.id) {
           Object.assign(db.profiles.find((p) => p.id === r.id), rules, { active: r.active !== false });
@@ -204,7 +219,7 @@ export function createDemoApi() {
         const number = Math.max(0, ...db.kits.map((k) => k.number)) + 1;
         const k = {
           id: uid(), brand_id: 'b1', number, reseller_id, sent_at, due_at: due_at || null, status: 'open',
-          adjust_amount: 0, commission_pct: null, bonus_amount: null, goal_amount: null, settled_at: null, paid_at: null,
+          adjust_amount: 0, commission_pct: null, bonus_amount: null, goal_amount: null, goal_type: null, settled_at: null, paid_at: null,
         };
         db.kits.push(k);
         save();
@@ -249,6 +264,7 @@ export function createDemoApi() {
         Object.assign(k, {
           status: 'settled', settled_at: new Date().toISOString(), adjust_amount: Number(adjust) || 0,
           commission_pct: r.commission_pct, bonus_amount: r.bonus_amount, goal_amount: r.goal_amount,
+          goal_type: r.goal_type,
         });
         save();
       },

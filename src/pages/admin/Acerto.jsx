@@ -4,7 +4,7 @@ import { useAction, useStore } from '../../store';
 import { api } from '../../lib/api';
 import { ErrorMsg, Loading, Screen } from '../../components/ui';
 import { kitTotals } from '../../lib/calc';
-import { brl, dateBR, pct, shortDate } from '../../lib/format';
+import { brl, dateBR, goalText, pct, shortDate } from '../../lib/format';
 
 export default function Acerto() {
   const { id } = useParams();
@@ -37,7 +37,7 @@ export default function Acerto() {
           <div className="row__main">
             <span>Bônus</span>
             <span className="row__meta">
-              {t.goal > 0 ? (t.goalHit ? `Meta de ${brl(t.goal)} atingida` : `Meta de ${brl(t.goal)} não atingida`) : 'Sem meta definida'}
+              {t.goal > 0 ? `Meta de ${goalText(t.goalType, t.goal)} ${t.goalHit ? 'atingida' : 'não atingida'} (vendeu ${goalText(t.goalType, t.goalDone)})` : 'Sem meta definida'}
             </span>
           </div>
           <span className="row__value">− {brl(t.bonus)}</span>

@@ -3,7 +3,9 @@
  * define os percentuais e valores de cada revendedora).
  *  vendido   = soma do preço das peças marcadas como vendidas
  *  comissão  = % da revendedora × vendido
- *  bônus     = valor fixo quando o vendido atinge a meta (meta > 0)
+ *  bônus     = valor fixo quando a meta é atingida (meta > 0). A meta é
+ *              por quantidade de peças vendidas (padrão) ou por valor vendido;
+ *              o ADM escolhe para cada revendedora.
  *  a receber = vendido − comissão − bônus + ajuste do ADM
  */
 export function itemPrice(item) {
@@ -14,7 +16,7 @@ export function kitTotals(kit, reseller) {
   const items = kit.items || [];
   const settled = kit.status === 'settled';
   const rules = settled
-    ? { commission_pct: kit.commission_pct, bonus_amount: kit.bonus_amount, goal_amount: kit.goal_amount }
+    ? { commission_pct: kit.commission_pct, bonus_amount: kit.bonus_amount, goal_amount: kit.goal_amount, goal_type: kit.goal_type }
     : reseller || kit.reseller || {};
   const sold = items.filter((i) => i.sold);
   const total = items.reduce((s, i) => s + itemPrice(i), 0);
@@ -22,7 +24,9 @@ export function kitTotals(kit, reseller) {
   const commissionPct = Number(rules.commission_pct) || 0;
   const commission = round2((soldTotal * commissionPct) / 100);
   const goal = Number(rules.goal_amount) || 0;
-  const goalHit = goal > 0 && soldTotal >= goal;
+  const goalType = rules.goal_type === 'value' ? 'value' : 'pieces';
+  const goalDone = goalType === 'value' ? soldTotal : sold.length; // quanto já andou na meta
+  const goalHit = goal > 0 && goalDone >= goal;
   const bonus = goalHit ? Number(rules.bonus_amount) || 0 : 0;
   const adjust = Number(kit.adjust_amount) || 0;
   return {
@@ -35,8 +39,10 @@ export function kitTotals(kit, reseller) {
     commissionPct,
     commission,
     goal,
+    goalType,
+    goalDone,
     goalHit,
-    goalProgress: goal > 0 ? Math.min(1, soldTotal / goal) : 0,
+    goalProgress: goal > 0 ? Math.min(1, goalDone / goal) : 0,
     bonusAmount: Number(rules.bonus_amount) || 0,
     bonus,
     adjust,

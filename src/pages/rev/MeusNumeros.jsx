@@ -1,7 +1,7 @@
 import { useStore } from '../../store';
 import { Empty, Loading, Screen, Stat } from '../../components/ui';
 import { kitTotals } from '../../lib/calc';
-import { brl, pct, shortDate } from '../../lib/format';
+import { brl, goalText, pct, shortDate } from '../../lib/format';
 import { currentKit } from './common';
 
 export default function MeusNumeros() {
@@ -31,8 +31,8 @@ export default function MeusNumeros() {
             <div style={{ width: `${t.goalProgress * 100}%` }} />
           </div>
           <span className="row__meta">
-            Você vendeu {brl(t.soldTotal)} de uma meta de {brl(t.goal)}.
-            {!t.goalHit && t.bonusAmount > 0 ? ` Faltam ${brl(t.goal - t.soldTotal)} para ganhar ${brl(t.bonusAmount)} de bônus.` : ''}
+            Você vendeu {goalText(t.goalType, t.goalDone)} de uma meta de {goalText(t.goalType, t.goal)}.
+            {!t.goalHit && t.bonusAmount > 0 ? ` ${t.goalType === 'pieces' && t.goal - t.goalDone === 1 ? 'Falta' : 'Faltam'} ${goalText(t.goalType, t.goal - t.goalDone)} para ganhar ${brl(t.bonusAmount)} de bônus.` : ''}
           </span>
         </div>
       )}

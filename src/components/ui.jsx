@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useStore } from '../store';
-import { brl, pct } from '../lib/format';
+import { brl, initials, pct } from '../lib/format';
 
 const ICONS = {
   home: 'M3 11l9-7 9 7v9h-6v-6H9v6H3z',
@@ -70,6 +70,7 @@ export function Screen({ title, sub, back, action, children }) {
             {sub && <span className="sub">{sub}</span>}
           </div>
           {action}
+          <ProfileButton me={me} admin={admin} />
         </div>
       </header>
       <main className="main">{children}</main>
@@ -84,6 +85,16 @@ export function Screen({ title, sub, back, action, children }) {
         </div>
       </nav>
     </div>
+  );
+}
+
+/* Botão do perfil no topo: logo da empresa (dono) ou iniciais (revendedora) */
+function ProfileButton({ me, admin }) {
+  const logo = admin && me?.brand_logo;
+  return (
+    <Link to="/perfil" className="profile-btn" aria-label={admin ? 'Perfil da empresa e sair' : 'Meu perfil e sair'}>
+      {logo ? <img src={logo} alt="" /> : <span>{initials(admin ? me?.brand_name : me?.name)}</span>}
+    </Link>
   );
 }
 

@@ -46,8 +46,11 @@ export default function PecaForm() {
         <div className="card" style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Thumb piece={form} />
           <div className="field" style={{ flex: 1 }}>
-            <label htmlFor="foto">Foto da peça</label>
-            <input id="foto" type="file" accept="image/*" onChange={onPhoto} style={{ fontSize: 13 }} />
+            <span className="row__meta">Foto da peça</span>
+            <label className="file-btn">
+              {form.photo_url ? 'Trocar foto' : 'Escolher foto'}
+              <input id="foto" type="file" accept="image/*" onChange={onPhoto} aria-label="Escolher foto da peça" />
+            </label>
             {uploading && <span className="row__meta">Enviando foto…</span>}
           </div>
         </div>

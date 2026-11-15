@@ -17,12 +17,17 @@ export function StoreProvider({ children }) {
   const reload = useCallback(async () => {
     if (!me) return;
     const admin = me.role === 'admin';
-    const [pieces, kits, resellers] = await Promise.all([
-      api.pieces.list(),
-      api.kits.list(),
-      admin ? api.resellers.list() : Promise.resolve([]),
-    ]);
-    setData({ pieces, kits, resellers, loaded: true });
+    try {
+      const [pieces, kits, resellers] = await Promise.all([
+        api.pieces.list(),
+        api.kits.list(),
+        admin ? api.resellers.list() : Promise.resolve([]),
+      ]);
+      setData({ pieces, kits, resellers, loaded: true });
+    } catch (e) {
+      // sessão trocada ou sem conexão: mantém os dados e tenta de novo na próxima mudança
+      console.warn('Falha ao recarregar dados:', e.message);
+    }
   }, [me]);
 
   useEffect(() => {
@@ -47,6 +52,9 @@ export function StoreProvider({ children }) {
       async signOut() {
         await api.auth.signOut();
         setMe(null);
+      },
+      async refreshMe() {
+        setMe(await api.auth.current());
       },
     }),
     [me, data, reload],

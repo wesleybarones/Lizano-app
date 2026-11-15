@@ -27,3 +27,10 @@ export function loginToEmail(login) {
 }
 export const initials = (name) =>
   String(name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
+
+// Meta do bônus: "10 peças" ou "R$ 1.000,00"
+export function goalText(type, v) {
+  if (type === 'value') return brl(v);
+  const n = Number(v) || 0;
+  return `${n} ${n === 1 ? 'peça' : 'peças'}`;
+}

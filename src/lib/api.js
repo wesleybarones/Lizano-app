@@ -12,7 +12,7 @@ const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const IS_DEMO = !URL || !KEY;
 
 const KIT_SELECT =
-  '*, reseller:profiles!kits_reseller_id_fkey(id,name,login,commission_pct,bonus_amount,goal_amount), items:kit_items(*, piece:pieces(*))';
+  '*, reseller:profiles!kits_reseller_id_fkey(id,name,login,commission_pct,bonus_amount,goal_amount,goal_type), items:kit_items(*, piece:pieces(*))';
 
 function createSupabaseApi() {
   const sb = createClient(URL, KEY);
@@ -24,9 +24,9 @@ function createSupabaseApi() {
   };
 
   async function profileOf(userId) {
-    const p = must(await sb.from('profiles').select('*, brand:brands(name)').eq('id', userId).maybeSingle());
+    const p = must(await sb.from('profiles').select('*, brand:brands(name,logo_url)').eq('id', userId).maybeSingle());
     if (!p || !p.active) return null;
-    return { ...p, brand_name: p.brand?.name || '' };
+    return { ...p, brand_name: p.brand?.name || '', brand_logo: p.brand?.logo_url || '' };
   }
 
   return {
@@ -49,6 +49,18 @@ function createSupabaseApi() {
       async current() {
         const { data } = await sb.auth.getSession();
         return data.session ? profileOf(data.session.user.id) : null;
+      },
+      async changePassword(password) {
+        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        const { error } = await sb.auth.updateUser({ password });
+        if (error) throw new Error(traduz(error.message));
+      },
+    },
+
+    brand: {
+      // Perfil da empresa (só o dono altera)
+      async save({ name, logo_url }, brandId) {
+        must(await sb.from('brands').update({ name: name.trim(), logo_url: logo_url || null }).eq('id', brandId));
       },
     },
 
@@ -87,6 +99,7 @@ function createSupabaseApi() {
           commission_pct: Number(r.commission_pct) || 0,
           bonus_amount: Number(r.bonus_amount) || 0,
           goal_amount: Number(r.goal_amount) || 0,
+          goal_type: r.goal_type === 'value' ? 'value' : 'pieces',
         };
         if (r.id) {
           return must(await sb.from('profiles').update({ ...rules, active: r.active !== false }).eq('id', r.id).select().single());
@@ -145,6 +158,7 @@ function createSupabaseApi() {
 function traduz(msg = '') {
   if (/already registered|already exists/i.test(msg)) return 'Já existe um acesso com esse celular ou e-mail.';
   if (/duplicate key.*code/i.test(msg)) return 'Já existe uma peça com esse código.';
+  if (/should be different/i.test(msg)) return 'A nova senha precisa ser diferente da atual.';
   if (/password/i.test(msg)) return 'Senha inválida (mínimo de 6 caracteres).';
   if (/network|fetch/i.test(msg)) return 'Sem conexão. Tente de novo.';
   return msg;

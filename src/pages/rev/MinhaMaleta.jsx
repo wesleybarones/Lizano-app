@@ -6,15 +6,14 @@ import { brl, shortDate } from '../../lib/format';
 import { currentKit } from './common';
 
 export default function MinhaMaleta() {
-  const { kits, loaded, signOut } = useStore();
+  const { kits, loaded } = useStore();
   const k = currentKit(kits);
-  const sair = <button type="button" className="btn btn--link" onClick={signOut} style={{ minHeight: 36, padding: 0 }}>Sair</button>;
-  if (!loaded) return <Screen title="Minha maleta" action={sair}><Loading /></Screen>;
-  if (!k) return <Screen title="Minha maleta" action={sair}><Empty>Você não tem maleta no momento. Quando a Lizano enviar, ela aparece aqui.</Empty></Screen>;
+  if (!loaded) return <Screen title="Minha maleta"><Loading /></Screen>;
+  if (!k) return <Screen title="Minha maleta"><Empty>Você não tem maleta no momento. Quando a Lizano enviar, ela aparece aqui.</Empty></Screen>;
   const t = kitTotals(k);
   const items = [...k.items].sort((a, b) => Number(a.sold) - Number(b.sold) || (a.piece?.name || '').localeCompare(b.piece?.name || ''));
   return (
-    <Screen title="Minha maleta" sub={`Maleta nº ${k.number}${k.due_at ? ` · acerto em ${shortDate(k.due_at)}` : ''}`} action={sair}>
+    <Screen title="Minha maleta" sub={`Maleta nº ${k.number}${k.due_at ? ` · acerto em ${shortDate(k.due_at)}` : ''}`}>
       <div className="card grid2">
         <Stat label="Com você" value={t.leftCount} />
         <Stat label="Já vendidas" value={t.soldCount} />

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../../store';
 import { Empty, Loading, Screen } from '../../components/ui';
 import { kitTotals } from '../../lib/calc';
-import { brl, initials, pct } from '../../lib/format';
+import { brl, goalText, initials, pct } from '../../lib/format';
 
 export default function Equipe() {
   const { resellers, kits, loaded } = useStore();
@@ -26,7 +26,7 @@ export default function Equipe() {
                 <div className="item__main">
                   <span className="row__title">{r.name}{r.active === false ? ' (inativa)' : ''}</span>
                   <span className="row__meta">
-                    Comissão {pct(r.commission_pct)} · {atual ? `maleta nº ${atual.number}` : 'sem maleta'}
+                    Comissão {pct(r.commission_pct)}{Number(r.goal_amount) > 0 ? ` · meta ${goalText(r.goal_type, r.goal_amount)}` : ''} · {atual ? `maleta nº ${atual.number}` : 'sem maleta'}
                   </span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>

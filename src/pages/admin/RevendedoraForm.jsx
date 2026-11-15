@@ -4,7 +4,7 @@ import { useAction, useStore } from '../../store';
 import { api, IS_DEMO } from '../../lib/api';
 import { ErrorMsg, Loading, Screen } from '../../components/ui';
 
-const EMPTY = { name: '', login: '', commission_pct: '30', bonus_amount: '0', goal_amount: '0', active: true };
+const EMPTY = { name: '', login: '', commission_pct: '30', bonus_amount: '0', goal_amount: '0', goal_type: 'pieces', active: true };
 
 export default function RevendedoraForm() {
   const { id } = useParams();
@@ -66,21 +66,33 @@ export default function RevendedoraForm() {
           </div>
         )}
         <h2 className="section-title">Regras</h2>
-        <div className="grid2">
-          <div className="field">
-            <label htmlFor="com">Comissão (%)</label>
-            <input id="com" className="input" type="number" inputMode="decimal" min="0" max="100" step="0.5" required value={form.commission_pct} onChange={set('commission_pct')} />
-          </div>
-          <div className="field">
-            <label htmlFor="meta">Meta por maleta (R$)</label>
-            <input id="meta" className="input" type="number" inputMode="decimal" min="0" step="0.01" value={form.goal_amount} onChange={set('goal_amount')} />
-          </div>
+        <div className="field">
+          <label htmlFor="com">Comissão (%)</label>
+          <input id="com" className="input" type="number" inputMode="decimal" min="0" max="100" step="0.5" required value={form.commission_pct} onChange={set('commission_pct')} />
         </div>
         <div className="field">
-          <label htmlFor="bonus">Bônus ao bater a meta (R$)</label>
-          <input id="bonus" className="input" type="number" inputMode="decimal" min="0" step="0.01" value={form.bonus_amount} onChange={set('bonus_amount')} />
-          <span className="hint">Deixe a meta em 0 para não ter bônus.</span>
+          <label htmlFor="tipo">Meta do bônus por</label>
+          <select id="tipo" className="input" value={form.goal_type} onChange={set('goal_type')}>
+            <option value="pieces">Quantidade de peças vendidas</option>
+            <option value="value">Valor vendido (R$)</option>
+          </select>
         </div>
+        <div className="grid2">
+          <div className="field">
+            <label htmlFor="meta">{form.goal_type === 'value' ? 'Meta por maleta (R$)' : 'Meta por maleta (peças)'}</label>
+            <input id="meta" className="input" type="number" inputMode={form.goal_type === 'value' ? 'decimal' : 'numeric'} min="0"
+              step={form.goal_type === 'value' ? '0.01' : '1'} value={form.goal_amount} onChange={set('goal_amount')} />
+          </div>
+          <div className="field">
+            <label htmlFor="bonus">Bônus ao bater a meta (R$)</label>
+            <input id="bonus" className="input" type="number" inputMode="decimal" min="0" step="0.01" value={form.bonus_amount} onChange={set('bonus_amount')} />
+          </div>
+        </div>
+        <span className="hint">
+          {form.goal_type === 'value'
+            ? 'Ex.: vendeu R$ 1.000,00 ou mais na maleta, ganha o bônus.'
+            : 'Ex.: vendeu 15 peças ou mais na maleta, ganha o bônus.'} Deixe a meta em 0 para não ter bônus.
+        </span>
         {id && (
           <label style={{ display: 'flex', gap: 10, alignItems: 'center', minHeight: 44 }}>
             <input type="checkbox" checked={form.active !== false} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} style={{ width: 20, height: 20 }} />
