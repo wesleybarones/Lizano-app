@@ -5,16 +5,16 @@
  *   Dono:        login "dono"         senha "123456"
  *   Revendedora: login "carla"        senha "123456"
  */
-import { addDays, today } from './format';
+import { addDays, isEmail, normalizePhone, today } from './format';
 
-const KEY = 'barones-consignado-demo-v2';
+const KEY = 'barones-consignado-demo-v3';
 const listeners = new Set();
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
 const wait = (v) => new Promise((r) => setTimeout(() => r(structuredClone(v)), 120));
 
 function seed() {
   const brand = { id: 'b1', name: 'Lizano', logo_url: null };
-  const admin = { id: 'u-dono', brand_id: 'b1', role: 'admin', name: 'Dono da Lizano', login: 'dono', active: true };
+  const admin = { id: 'u-dono', brand_id: 'b1', role: 'admin', name: 'Dono da Lizano', login: 'dono', phone: '5521900000000', active: true };
   const rev = (id, name, login, c, b, g) => ({
     id, brand_id: 'b1', role: 'reseller', name, login, commission_pct: c, bonus_amount: b, goal_amount: g,
     goal_type: 'pieces', active: true,
@@ -118,7 +118,10 @@ export function createDemoApi() {
     auth: {
       async signIn(login, password) {
         const l = String(login).trim().toLowerCase();
-        const p = db.profiles.find((x) => x.login?.toLowerCase() === l && x.active);
+        const tel = isEmail(l) ? '' : normalizePhone(l);
+        const p = db.profiles.find(
+          (x) => x.active && (x.login?.toLowerCase() === l || (tel && (x.phone === tel || normalizePhone(x.login) === tel))),
+        );
         if (!p || password !== (p.password || '123456')) throw new Error('Login ou senha incorretos.');
         db.session = p.id;
         save();

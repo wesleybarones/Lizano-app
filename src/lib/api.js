@@ -4,7 +4,7 @@
  *  - Demonstração (dados de exemplo salvos no navegador)
  */
 import { createClient } from '@supabase/supabase-js';
-import { loginToEmail } from './format';
+import { isEmail, loginToEmail, normalizePhone } from './format';
 import { createDemoApi } from './demo';
 
 const URL = import.meta.env.VITE_SUPABASE_URL;
@@ -32,8 +32,13 @@ function createSupabaseApi() {
   return {
     auth: {
       async signIn(login, password) {
-        const email = loginToEmail(login);
+        let email = loginToEmail(login);
         if (!email) throw new Error('Informe o celular ou e-mail.');
+        // celular cadastrado numa conta de e-mail (ex.: o dono): descobre o e-mail
+        if (!isEmail(login)) {
+          const { data } = await sb.rpc('login_email', { p_phone: normalizePhone(login) });
+          if (data) email = data;
+        }
         const { data, error } = await sb.auth.signInWithPassword({ email, password });
         if (error) throw new Error('Login ou senha incorretos.');
         const me = await profileOf(data.user.id);

@@ -40,7 +40,10 @@ Sem as chaves do Supabase o app abre no **modo demonstração**, com dados de ex
    `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
 
 Revendedoras são criadas pelo próprio dono no app (Equipe › Nova revendedora).
-Login por celular vira internamente `numero@celular.barones.app`.
+Todos entram com **e-mail ou celular** (qualquer formato: `+55 21 99999-9999`, `21999999999`…).
+Uma conta de e-mail pode ter também um celular (`profiles.phone`, só dígitos com 55): o login por
+celular descobre o e-mail pela função `login_email`. Revendedora criada só com celular vira
+internamente `55DDDNUMERO@celular.barones.app`.
 
 ## Outra marca no futuro
 

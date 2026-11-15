@@ -18,11 +18,19 @@ export const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho
 export const monthKey = (iso) => String(iso).slice(0, 7);
 export const monthLabel = (key) => `${MONTHS[Number(key.slice(5, 7)) - 1]} de ${key.slice(0, 4)}`;
 
-// Login: celular (só números) vira um e-mail interno; e-mail fica como está.
+// Celular em qualquer formato -> só dígitos com 55 (Brasil) na frente
+export function normalizePhone(v) {
+  let d = String(v || '').replace(/\D/g, '');
+  if (d.length === 10 || d.length === 11) d = `55${d}`;
+  return d;
+}
+export const isEmail = (v) => String(v || '').includes('@');
+
+// Login: e-mail fica como está; celular sem conta de e-mail vira um e-mail interno.
 export function loginToEmail(login) {
   const v = String(login || '').trim().toLowerCase();
-  if (v.includes('@')) return v;
-  const digits = v.replace(/\D/g, '');
+  if (isEmail(v)) return v;
+  const digits = normalizePhone(v);
   return digits ? `${digits}@celular.barones.app` : '';
 }
 export const initials = (name) =>
