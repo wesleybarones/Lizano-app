@@ -110,7 +110,7 @@ function useTabSwipe(tabs) {
       const t = e.touches[0];
       const el = e.target;
       if (t.clientX < 24 || t.clientX > window.innerWidth - 24) return;
-      if (el.closest?.('.chips, .toggle, input, textarea, select, .lightbox, .sheet-bg, .pick, .qty, [data-noswipe]')) return;
+      if (el.closest?.('.chips, .toggle, input, textarea, select, .lightbox, .sheet-bg, .qty, [data-noswipe]')) return;
       start.current = { x: t.clientX, y: t.clientY, time: Date.now() };
     },
     onTouchEnd(e) {
