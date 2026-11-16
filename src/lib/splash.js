@@ -9,6 +9,6 @@ export function hideSplash() {
   const wait = Math.max(0, (window.__splashMin || 0) - Date.now());
   setTimeout(() => {
     el.classList.add('is-out');
-    setTimeout(() => el.remove(), 600);
+    setTimeout(() => el.remove(), 700);
   }, wait);
 }
