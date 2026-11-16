@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { hideSplash } from './lib/splash';
 import { StoreProvider, useStore } from './store';
 import { Loading } from './components/ui';
 import Login from './pages/Login';
@@ -21,6 +23,9 @@ import Historico from './pages/rev/Historico';
 
 function Routed() {
   const { me } = useStore();
+  useEffect(() => {
+    if (me !== undefined) hideSplash(); // sessão verificada: pode mostrar o app
+  }, [me]);
   if (me === undefined) return <Loading />;
   if (!me) return <Login />;
   if (me.role === 'admin') {
