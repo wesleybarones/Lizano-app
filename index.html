@@ -22,6 +22,8 @@
         background: radial-gradient(circle at 50% 44%, #2c3854 0%, #232d42 45%, #1a2232 100%);
         transition: opacity 0.6s ease, transform 0.6s ease;
       }
+      #splash .sky { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.9s ease; }
+      #splash .sky.is-on { opacity: 1; }
       #splash.is-out { opacity: 0; transform: scale(1.04); pointer-events: none; }
       #splash .glow {
         position: absolute; width: 260px; height: 260px; border-radius: 50%; top: 50%; left: 50%; translate: -50% -62%;
@@ -34,7 +36,9 @@
       #splash .l1 { animation: sp-draw 1.05s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards; }
       #splash .l2 { animation: sp-draw 1.05s cubic-bezier(0.65, 0, 0.35, 1) 0.5s forwards; }
       /* brilho nas linhas, como luz refletindo no metal */
-      #splash .mark svg.logo { animation: sp-shine 1.1s ease-in-out 1.45s both, sp-bright 1.1s cubic-bezier(0.5, 0, 0.85, 0.35) 2.3s forwards; }
+      #splash .mark svg.logo { animation: sp-shine 1.1s ease-in-out 1.45s both; }
+      /* quando a estrela cadente encontra a logo: a logo acende e a luz toma a tela */
+      #splash.is-hit .mark svg.logo { animation: sp-shine 1.1s ease-in-out 1.45s both, sp-bright 1.1s cubic-bezier(0.5, 0, 0.85, 0.35) 0s forwards; }
       @keyframes sp-shine {
         0% { filter: drop-shadow(0 0 0 rgba(255, 236, 200, 0)); }
         45% { filter: drop-shadow(0 0 7px rgba(255, 236, 200, 0.95)) brightness(1.35); }
@@ -53,15 +57,15 @@
           rgba(255, 250, 238, 0.9) 0%, rgba(255, 246, 228, 0.72) 12%, rgba(250, 238, 212, 0.5) 26%,
           rgba(244, 228, 196, 0.32) 40%, rgba(236, 216, 176, 0.18) 55%, rgba(226, 201, 152, 0.08) 72%,
           rgba(226, 201, 152, 0.02) 88%, rgba(226, 201, 152, 0) 100%);
-        animation: sp-flash 1.15s cubic-bezier(0.5, 0, 0.85, 0.35) 2.35s forwards;
       }
+      #splash.is-hit .flash { animation: sp-flash 1.15s cubic-bezier(0.5, 0, 0.85, 0.35) 0.03s forwards; }
       @keyframes sp-flash { 0% { opacity: 0; transform: scale(0.35); } 25% { opacity: 0.85; } 100% { opacity: 1; transform: scale(9); } }
       /* véu claro na tela toda, entrando aos poucos junto com a luz */
       #splash .veil {
         position: absolute; inset: 0; pointer-events: none; opacity: 0; will-change: opacity;
         background: radial-gradient(circle at 50% 44%, #fffaf0 0%, #f7efdd 60%, #efe3c8 100%);
-        animation: sp-veil 1.0s cubic-bezier(0.5, 0, 0.85, 0.4) 2.55s forwards;
       }
+      #splash.is-hit .veil { animation: sp-veil 1.0s cubic-bezier(0.5, 0, 0.85, 0.4) 0.23s forwards; }
       @keyframes sp-veil { to { opacity: 1; } }
       /* brilho de diamante na ponta do símbolo */
       #splash .mark svg.spark { position: absolute; width: 16px; height: 16px; left: calc(50.3% - 8px); top: -6px; filter: drop-shadow(0 0 6px rgba(255, 236, 200, 0.9)); opacity: 0; transform: scale(0) rotate(-45deg); animation: sp-spark 0.9s ease-out 1.5s forwards; }
@@ -85,6 +89,7 @@
   </head>
   <body>
     <div id="splash" aria-hidden="true">
+      <canvas class="sky"></canvas>
       <div class="glow"></div>
       <div class="flash"></div>
       <div class="veil"></div>
@@ -117,12 +122,88 @@
         try { quick = sessionStorage.getItem('lz-splash') === '1'; sessionStorage.setItem('lz-splash', '1'); } catch (e) {}
         var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
         window.__splashMin = Date.now() + (quick || reduce ? 350 : 3800);
-        if (quick) document.getElementById('splash').classList.add('is-quick');
+        var splash = document.getElementById('splash');
+        if (quick) splash.classList.add('is-quick');
+        if (!quick && !reduce) sky(splash);
         try {
           var th = localStorage.getItem('lz-theme') || 'dark';
           if (th === 'light' || (th === 'auto' && matchMedia('(prefers-color-scheme: light)').matches)) document.documentElement.dataset.theme = 'light';
         } catch (e) {}
       })();
+
+      // Céu da abertura: partículas douradas e uma estrela cadente que vai até a logo.
+      // Quando ela encontra a logo, a luz se acende e o app aparece.
+      function sky(splash) {
+        var c = splash.querySelector('.sky'), ctx = c.getContext('2d');
+        var dpr = Math.min(window.devicePixelRatio || 1, 2), w = innerWidth, h = innerHeight;
+        c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var R = function (a, b) { return a + Math.random() * (b - a); };
+        var parts = [], n = Math.round(Math.min(80, Math.max(36, (w * h) / 9000)));
+        for (var i = 0; i < n; i++) {
+          var ang = R(0, 6.283), sp = R(4, 14);
+          parts.push({ x: R(0, w), y: R(0, h), r: Math.random() < 0.15 ? R(1.3, 2) : R(0.5, 1.2), vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp - 3, a: R(0.15, 0.55), tw: R(0.6, 1.6), ph: R(0, 6.283) });
+        }
+        var t0 = performance.now(), last = t0, star = null, hit = false, burst = null;
+        var LAUNCH = 1150, DUR = 1150; // chega na logo por volta de 2,3 s
+        function onHit() {
+          if (hit) return; hit = true;
+          splash.classList.add('is-hit');
+          window.__splashMin = Math.max(window.__splashMin - 400, Date.now() + 1250);
+        }
+        setTimeout(onHit, 2900); // garantia, se o celular estiver lento
+        function launch(now) {
+          var m = splash.querySelector('.mark').getBoundingClientRect();
+          var tx = m.left + m.width * 0.5, ty = m.top + m.height * 0.42;
+          var dir = Math.random() < 0.5 ? 1 : -1;
+          var x0 = tx + dir * Math.min(w * 0.75, 340), y0 = Math.max(-20, ty - Math.min(h * 0.42, 330));
+          star = { x0: x0, y0: y0, dx: tx - x0, dy: ty - y0, t: now };
+        }
+        function frame(now) {
+          if (!c.isConnected) return;
+          requestAnimationFrame(frame);
+          var dt = Math.min(0.05, (now - last) / 1000); last = now;
+          var el = now - t0;
+          ctx.clearRect(0, 0, w, h);
+          for (var i = 0; i < parts.length; i++) {
+            var p = parts[i];
+            p.x += p.vx * dt; p.y += p.vy * dt;
+            if (p.x < -10) p.x = w + 10; if (p.x > w + 10) p.x = -10; if (p.y < -10) p.y = h + 10; if (p.y > h + 10) p.y = -10;
+            var al = p.a * (0.55 + 0.45 * Math.sin(now / 1000 * p.tw + p.ph));
+            if (p.r > 1.25) {
+              var g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
+              g.addColorStop(0, 'rgba(255,240,210,' + al * 0.5 + ')'); g.addColorStop(1, 'rgba(255,240,210,0)');
+              ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 4, 0, 6.283); ctx.fill();
+            }
+            ctx.fillStyle = 'rgba(226,201,152,' + al + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill();
+          }
+          if (!star && !hit && el >= LAUNCH) launch(now);
+          if (star) {
+            var k = Math.min(1, (now - star.t) / DUR);
+            var e = 1 - Math.pow(1 - k, 1.7);
+            var hx = star.x0 + star.dx * e, hy = star.y0 + star.dy * e;
+            var len = Math.sqrt(star.dx * star.dx + star.dy * star.dy), ux = star.dx / len, uy = star.dy / len;
+            var tail = 170 * Math.min(1, k * 3) * (k > 0.85 ? (1 - k) / 0.15 * 0.7 + 0.3 : 1);
+            var fade = Math.min(1, k / 0.1);
+            var gx = ctx.createLinearGradient(hx, hy, hx - ux * tail, hy - uy * tail);
+            gx.addColorStop(0, 'rgba(255,250,236,' + 0.95 * fade + ')'); gx.addColorStop(0.3, 'rgba(236,214,170,' + 0.6 * fade + ')'); gx.addColorStop(1, 'rgba(226,201,152,0)');
+            ctx.strokeStyle = gx; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx - ux * tail, hy - uy * tail); ctx.stroke();
+            var hr = 9 + 6 * k;
+            var hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, hr);
+            hg.addColorStop(0, 'rgba(255,248,232,' + fade + ')'); hg.addColorStop(1, 'rgba(255,248,232,0)');
+            ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, hr, 0, 6.283); ctx.fill();
+            if (k >= 1) { burst = { x: hx, y: hy, t: now }; star = null; onHit(); }
+          }
+          if (burst) { // clarão no instante em que a estrela toca a logo
+            var b = Math.min(1, (now - burst.t) / 650), br = 14 + 150 * (1 - Math.pow(1 - b, 3));
+            var bg = ctx.createRadialGradient(burst.x, burst.y, 0, burst.x, burst.y, br);
+            bg.addColorStop(0, 'rgba(255,250,236,' + 0.9 * (1 - b) + ')'); bg.addColorStop(0.35, 'rgba(240,220,180,' + 0.45 * (1 - b) + ')'); bg.addColorStop(1, 'rgba(226,201,152,0)');
+            ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(burst.x, burst.y, br, 0, 6.283); ctx.fill();
+            if (b >= 1) burst = null;
+          }
+        }
+        requestAnimationFrame(function () { c.classList.add('is-on'); requestAnimationFrame(frame); });
+      }
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
