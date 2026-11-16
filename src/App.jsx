@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { hideSplash } from './lib/splash';
 import { StoreProvider, useStore } from './store';
 import { Loading } from './components/ui';
+import Particles from './components/Particles';
 import Login from './pages/Login';
 import Perfil from './pages/Perfil';
 import Termos from './pages/Termos';
@@ -68,9 +69,15 @@ function Routed() {
   );
 }
 
+// prévia: partículas ao fundo só aparecem quando ativadas neste aparelho
+function showParticles() {
+  try { return localStorage.getItem('lz-particles') === '1'; } catch { return false; }
+}
+
 export default function App() {
   return (
     <StoreProvider>
+      {showParticles() && <Particles />}
       <Routed />
     </StoreProvider>
   );

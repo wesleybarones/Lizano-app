@@ -316,3 +316,8 @@ html[data-theme='light'] .alert--soon { background: #f6ead0; }
 html[data-theme='light'] .nav, html[data-theme='light'] .lightbox, html[data-theme='light'] .card--hl { --on-dark-2: #b9bdc6; }
 html[data-theme='light'] .login { background: var(--navy); color: var(--cream); min-height: 100dvh; --on-dark-2: #b9bdc6; }
 html[data-theme='light'] .login .demo-box { color: var(--on-dark-2); }
+
+/* Partículas ao fundo (atrás do conteúdo) */
+.particles { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
+.app, .login { position: relative; z-index: 1; }
+html[data-theme='light'] .particles { display: none; }
