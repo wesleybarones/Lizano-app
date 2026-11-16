@@ -69,9 +69,9 @@ function Routed() {
   );
 }
 
-// prévia: partículas ao fundo só aparecem quando ativadas neste aparelho
+// partículas douradas ao fundo (dá para desligar neste aparelho com lz-particles = '0')
 function showParticles() {
-  try { return localStorage.getItem('lz-particles') === '1'; } catch { return false; }
+  try { return localStorage.getItem('lz-particles') !== '0'; } catch { return true; }
 }
 
 export default function App() {
