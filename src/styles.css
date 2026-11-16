@@ -228,3 +228,12 @@ select.input { appearance: auto; }
 .btn--delete:hover { background: #b33a2b; color: #fff; }
 @keyframes sheet-up { from { transform: translateY(40px); opacity: 0.6; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .sheet, .sheet-bg { animation: none; } }
+
+/* Senha com botão de olho */
+.pw { position: relative; }
+.pw .input { padding-right: 52px; }
+.pw__eye {
+  position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 46px; height: 44px;
+  border: 0; background: none; color: var(--ink-2); display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 10px;
+}
+.pw__eye[aria-pressed='true'] { color: var(--gold-dark); }

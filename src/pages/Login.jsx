@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStore } from '../store';
 import { api, IS_DEMO } from '../lib/api';
 import { ErrorMsg, Monogram } from '../components/ui';
+import PasswordInput from '../components/PasswordInput';
 
 export default function Login() {
   const { signIn } = useStore();
@@ -51,8 +52,7 @@ export default function Login() {
           </div>
           <div className="field">
             <label htmlFor="senha">Senha</label>
-            <input id="senha" className="input" type="password" autoComplete="current-password" value={password}
-              onChange={(e) => setPassword(e.target.value)} required />
+            <PasswordInput id="senha" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           <ErrorMsg>{error}</ErrorMsg>
           <button className="btn btn--primary" type="submit" disabled={busy}>{busy ? 'Entrando…' : 'Entrar'}</button>

@@ -4,6 +4,7 @@ import { useStore } from '../store';
 import { api } from '../lib/api';
 import { ErrorMsg, Screen } from '../components/ui';
 import PhotoPicker from '../components/PhotoPicker';
+import PasswordInput from '../components/PasswordInput';
 import { initials } from '../lib/format';
 
 export default function Perfil() {
@@ -121,11 +122,11 @@ function Senha() {
       <b>Trocar senha</b>
       <div className="field">
         <label htmlFor="nova">Nova senha</label>
-        <input id="nova" className="input" type="password" autoComplete="new-password" minLength={6} required value={pw} onChange={(e) => setPw(e.target.value)} />
+        <PasswordInput id="nova" autoComplete="new-password" minLength={6} required value={pw} onChange={(e) => setPw(e.target.value)} />
       </div>
       <div className="field">
         <label htmlFor="nova2">Repita a nova senha</label>
-        <input id="nova2" className="input" type="password" autoComplete="new-password" minLength={6} required value={pw2} onChange={(e) => setPw2(e.target.value)} />
+        <PasswordInput id="nova2" autoComplete="new-password" minLength={6} required value={pw2} onChange={(e) => setPw2(e.target.value)} />
       </div>
       <ErrorMsg>{error}</ErrorMsg>
       <div className="btns">
