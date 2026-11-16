@@ -5,10 +5,10 @@
  *   Dono:        login "dono"         senha "123456"
  *   Revendedora: login "carla"        senha "123456"
  */
-import { addDays, isEmail, normalizePhone, today } from './format';
+import { addDays, guessCategory, isEmail, normalizePhone, today } from './format';
 import { blobToDataUrl, prepareImage } from './image';
 
-const KEY = 'barones-consignado-demo-v3';
+const KEY = 'barones-consignado-demo-v4';
 const listeners = new Set();
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
 const wait = (v) => new Promise((r) => setTimeout(() => r(structuredClone(v)), 120));
@@ -27,7 +27,9 @@ function seed() {
     rev('u-patricia', 'Patrícia Lima', 'patricia', 25, 40, 12),
     rev('u-simone', 'Simone Alves', 'simone', 30, 0, 0),
   ];
-  const pc = (id, code, name, cost, price, stock) => ({ id, brand_id: 'b1', code, name, photo_url: null, cost, price, stock_qty: stock });
+  const pc = (id, code, name, cost, price, stock) => ({
+    id, brand_id: 'b1', code, name, photo_url: null, cost, price, stock_qty: stock, category: guessCategory(name) || 'outro',
+  });
   const pieces = [
     pc('p1', 'CL-031', 'Colar ponto de luz', 32, 89.9, 30),
     pc('p2', 'BR-102', 'Brinco argola dourada', 21, 59.9, 40),
@@ -165,6 +167,7 @@ export function createDemoApi() {
         const row = {
           code, name: p.name.trim(), photo_url: p.photo_url || null,
           cost: Number(p.cost) || 0, price: Number(p.price) || 0, stock_qty: Number(p.stock_qty) || 0,
+          category: p.category || 'outro',
         };
         if (p.id) Object.assign(piece(p.id), row);
         else db.pieces.push({ id: uid(), brand_id: 'b1', ...row });

@@ -1,19 +1,22 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '../../store';
-import { Empty, Loading, Screen, Thumb } from '../../components/ui';
+import { byCategory, CategoryChips, Empty, Loading, Screen, Thumb } from '../../components/ui';
 import { brl } from '../../lib/format';
 
 export default function Pecas() {
   const { pieces, kits, loaded } = useStore();
   const [q, setQ] = useState('');
+  const [cat, setCat] = useState('');
   const naRua = useMemo(() => {
     const m = {};
     for (const k of kits) if (k.status === 'open') for (const i of k.items) if (!i.sold) m[i.piece_id] = (m[i.piece_id] || 0) + 1;
     return m;
   }, [kits]);
   const termo = q.trim().toLowerCase();
-  const lista = pieces.filter((p) => !termo || p.name.toLowerCase().includes(termo) || p.code.toLowerCase().includes(termo));
+  const lista = pieces
+    .filter(byCategory(cat))
+    .filter((p) => !termo || p.name.toLowerCase().includes(termo) || p.code.toLowerCase().includes(termo));
 
   return (
     <Screen title="Peças">
@@ -21,6 +24,7 @@ export default function Pecas() {
         <label htmlFor="busca">Buscar por nome ou código</label>
         <input id="busca" className="input" type="search" placeholder="Ex.: colar, BR-102" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
+      {pieces.length > 0 && <CategoryChips value={cat} onChange={setCat} pieces={pieces} />}
       {!loaded ? (
         <Loading />
       ) : lista.length === 0 ? (

@@ -82,6 +82,7 @@ function createSupabaseApi() {
           cost: Number(p.cost) || 0,
           price: Number(p.price) || 0,
           stock_qty: Number(p.stock_qty) || 0,
+          category: p.category || 'outro',
         };
         if (p.id) return must(await sb.from('pieces').update(row).eq('id', p.id).select().single());
         return must(await sb.from('pieces').insert({ ...row, brand_id: brandId }).select().single());

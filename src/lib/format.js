@@ -42,3 +42,20 @@ export function goalText(type, v) {
   const n = Number(v) || 0;
   return `${n} ${n === 1 ? 'peça' : 'peças'}`;
 }
+
+// Categorias das peças
+export const CATEGORIES = [
+  { id: 'brinco', label: 'Brincos', one: 'Brinco' },
+  { id: 'colar', label: 'Colares', one: 'Colar' },
+  { id: 'pulseira', label: 'Pulseiras', one: 'Pulseira' },
+  { id: 'outro', label: 'Outros', one: 'Outro' },
+];
+export const catOne = (id) => CATEGORIES.find((c) => c.id === id)?.one || 'Outro';
+// Sugere a categoria pelo nome da peça (o dono pode trocar)
+export function guessCategory(name) {
+  const n = String(name || '').toLowerCase();
+  if (n.includes('brinco')) return 'brinco';
+  if (/colar|gargantilha|corrente/.test(n)) return 'colar';
+  if (/pulseira|bracelete/.test(n)) return 'pulseira';
+  return '';
+}

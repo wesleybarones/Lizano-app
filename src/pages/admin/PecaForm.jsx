@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAction, useStore } from '../../store';
 import { api } from '../../lib/api';
+import { CATEGORIES, guessCategory } from '../../lib/format';
 import { ErrorMsg, Loading, Screen, Thumb } from '../../components/ui';
 import PhotoPicker from '../../components/PhotoPicker';
 
-const EMPTY = { code: '', name: '', cost: '', price: '', stock_qty: '', photo_url: '' };
+const EMPTY = { code: '', name: '', cost: '', price: '', stock_qty: '', photo_url: '', category: '' };
 
 export default function PecaForm() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ export default function PecaForm() {
   const existing = id ? pieces.find((p) => p.id === id) : null;
 
   useEffect(() => {
-    if (existing) setForm({ ...EMPTY, ...existing, photo_url: existing.photo_url || '' });
+    if (existing) setForm({ ...EMPTY, ...existing, photo_url: existing.photo_url || '', categoryTouched: true });
   }, [existing?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (id && !loaded) return <Screen title="Peça" back="/pecas"><Loading /></Screen>;
@@ -54,7 +55,20 @@ export default function PecaForm() {
         </div>
         <div className="field">
           <label htmlFor="nome">Nome</label>
-          <input id="nome" className="input" required value={form.name} onChange={set('name')} placeholder="Brinco argola dourada" />
+          <input id="nome" className="input" required value={form.name} placeholder="Brinco argola dourada"
+            onChange={(e) => {
+              const name = e.target.value;
+              // sugere a categoria pelo nome enquanto o dono não escolher outra
+              setForm((f) => ({ ...f, name, category: f.categoryTouched ? f.category : guessCategory(name) || f.category }));
+            }} />
+        </div>
+        <div className="field">
+          <label htmlFor="categoria">Categoria</label>
+          <select id="categoria" className="input" required value={form.category || ''}
+            onChange={(e) => setForm((f) => ({ ...f, category: e.target.value, categoryTouched: true }))}>
+            <option value="" disabled>Escolha…</option>
+            {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.one}</option>)}
+          </select>
         </div>
         <div className="grid2">
           <div className="field">

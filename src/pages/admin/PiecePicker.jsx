@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Thumb } from '../../components/ui';
+import { byCategory, CategoryChips, Thumb } from '../../components/ui';
 import { brl } from '../../lib/format';
 
 /* Escolhe peças e quantidades (limitadas ao estoque) */
 export default function PiecePicker({ pieces, qty, setQty }) {
   const [q, setQ] = useState('');
+  const [cat, setCat] = useState('');
   const termo = q.trim().toLowerCase();
-  const lista = pieces.filter((p) => !termo || p.name.toLowerCase().includes(termo) || p.code.toLowerCase().includes(termo));
+  const lista = pieces
+    .filter(byCategory(cat))
+    .filter((p) => !termo || p.name.toLowerCase().includes(termo) || p.code.toLowerCase().includes(termo));
   const change = (p, d) =>
     setQty((m) => {
       const v = Math.max(0, Math.min(p.stock_qty, (m[p.id] || 0) + d));
@@ -18,6 +21,7 @@ export default function PiecePicker({ pieces, qty, setQty }) {
         <label htmlFor="busca-peca">Buscar peça</label>
         <input id="busca-peca" className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nome ou código" />
       </div>
+      <CategoryChips value={cat} onChange={setCat} pieces={pieces} />
       <div className="list">
         {lista.map((p) => (
           <div key={p.id} className="item" style={{ paddingLeft: 10 }}>

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink } from 'react-router-dom';
 import { useStore } from '../store';
-import { brl, initials, pct } from '../lib/format';
+import { brl, CATEGORIES, initials, pct } from '../lib/format';
 
 const ICONS = {
   home: 'M3 11l9-7 9 7v9h-6v-6H9v6H3z',
@@ -107,10 +108,70 @@ export function Stat({ label, value, xl }) {
   );
 }
 
+/* Miniatura: tocar abre a foto grande */
 export function Thumb({ piece }) {
-  if (piece?.photo_url) return <img className="thumb" src={piece.photo_url} alt="" loading="lazy" />;
-  return <div className="thumb" aria-hidden="true">foto</div>;
+  const [open, setOpen] = useState(false);
+  if (!piece?.photo_url) return <div className="thumb" aria-hidden="true">foto</div>;
+  const show = (e) => {
+    e.preventDefault(); // dentro de um link/botão: não navega nem seleciona
+    e.stopPropagation();
+    setOpen(true);
+  };
+  return (
+    <>
+      {/* span em vez de button: a miniatura fica dentro de links e botões da lista */}
+      <span role="button" tabIndex={0} className="thumb thumb--btn" onClick={show}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && show(e)}
+        aria-label={`Ver foto de ${piece.name || 'peça'} em tamanho grande`}>
+        <img src={piece.photo_url} alt="" loading="lazy" />
+      </span>
+      {open && <Lightbox src={piece.photo_url} title={piece.name} onClose={() => setOpen(false)} />}
+    </>
+  );
 }
+
+export function Lightbox({ src, title, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+  const stop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  return createPortal(
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={title || 'Foto da peça'} onClick={(e) => { stop(e); onClose(); }}>
+      <button type="button" className="lightbox__close" aria-label="Fechar foto" onClick={(e) => { stop(e); onClose(); }} autoFocus>✕</button>
+      <img src={src} alt={title || 'Foto da peça'} onClick={stop} />
+      {title && <p className="lightbox__title">{title}</p>}
+    </div>,
+    document.body,
+  );
+}
+
+/* Filtro por categoria: Todas · Brincos · Colares · Pulseiras · Outros */
+export function CategoryChips({ value, onChange, pieces }) {
+  const count = (id) => pieces.filter((p) => (p.category || 'outro') === id).length;
+  const opts = [{ id: '', label: 'Todas', n: pieces.length }, ...CATEGORIES.map((c) => ({ ...c, n: count(c.id) }))].filter(
+    (o) => o.id === '' || o.n > 0 || o.id === value,
+  );
+  return (
+    <div className="chips" role="group" aria-label="Filtrar por categoria">
+      {opts.map((o) => (
+        <button key={o.id || 'all'} type="button" className="chip" aria-pressed={value === o.id} onClick={() => onChange(o.id)}>
+          {o.label} <span>{o.n}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+export const byCategory = (cat) => (p) => !cat || (p.category || 'outro') === cat;
 
 export function Empty({ children }) {
   return <div className="empty">{children}</div>;
