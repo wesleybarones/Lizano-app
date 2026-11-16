@@ -3,7 +3,7 @@ const KEY = 'lz-theme';
 const mq = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
 
 export function getThemePref() {
-  try { return localStorage.getItem(KEY) || 'auto'; } catch { return 'auto'; }
+  try { return localStorage.getItem(KEY) || 'dark'; } catch { return 'dark'; }
 }
 function resolve(pref) {
   if (pref === 'light' || pref === 'dark') return pref;
