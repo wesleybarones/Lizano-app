@@ -17,8 +17,6 @@ const KIT_SELECT =
 
 function createSupabaseApi() {
   const sb = createClient(URL, KEY);
-  // cliente separado, sem sessão, só para criar a conta de login da revendedora
-  const signupClient = createClient(URL, KEY, { auth: { persistSession: false, autoRefreshToken: false } });
   const must = ({ data, error }) => {
     if (error) throw new Error(traduz(error.message));
     return data;
@@ -115,13 +113,21 @@ function createSupabaseApi() {
         if (r.id) {
           return must(await sb.from('profiles').update({ ...rules, active: r.active !== false }).eq('id', r.id).select().single());
         }
-        const email = loginToEmail(r.login);
-        if (!email) throw new Error('Informe o celular ou e-mail da revendedora.');
+        if (!loginToEmail(r.login)) throw new Error('Informe o celular ou e-mail da revendedora.');
         if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
-        must(await sb.from('invites').upsert({ email, brand_id: brandId, ...rules }));
-        const { error } = await signupClient.auth.signUp({ email, password });
-        if (error) throw new Error(traduz(error.message));
-        return { ...rules, pending: true };
+        // conta criada pelo banco (só o dono pode); o cadastro público do Supabase fica desligado
+        must(
+          await sb.rpc('create_reseller', {
+            p_name: rules.name,
+            p_login: rules.login,
+            p_password: password,
+            p_commission: rules.commission_pct,
+            p_bonus: rules.bonus_amount,
+            p_goal: rules.goal_amount,
+            p_goal_type: rules.goal_type,
+          }),
+        );
+        return rules;
       },
     },
 
@@ -167,7 +173,7 @@ function createSupabaseApi() {
 }
 
 function traduz(msg = '') {
-  if (/already registered|already exists/i.test(msg)) return 'Já existe um acesso com esse celular ou e-mail.';
+  if (/already registered|already exists|Já existe/i.test(msg)) return 'Já existe um acesso com esse celular ou e-mail.';
   if (/duplicate key.*code/i.test(msg)) return 'Já existe uma peça com esse código.';
   if (/should be different/i.test(msg)) return 'A nova senha precisa ser diferente da atual.';
   if (/password/i.test(msg)) return 'Senha inválida (mínimo de 6 caracteres).';

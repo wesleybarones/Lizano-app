@@ -22,8 +22,9 @@ Sem as chaves do Supabase o app abre no **modo demonstração**, com dados de ex
 
 1. Crie um projeto em [supabase.com](https://supabase.com) (região São Paulo).
 2. **SQL Editor**: cole e rode, em ordem, os arquivos de `supabase/migrations/` (001, 002…).
-3. **Authentication › Sign In / Providers › Email**: desligue *Confirm email*
-   (as revendedoras entram com o login criado pelo dono, sem e-mail de confirmação).
+3. **Authentication › Sign In / Providers**: pode deixar **desligado** *Allow new users to sign up*
+   (mais seguro). As contas das revendedoras são criadas pelo dono no app, pela função
+   `create_reseller` do banco, já confirmadas.
 4. **Authentication › Users › Add user**: crie o usuário do dono (e-mail e senha), marcando *Auto Confirm*.
 5. **SQL Editor**: crie a marca e ligue o dono a ela (troque o e-mail):
 
@@ -39,7 +40,7 @@ Sem as chaves do Supabase o app abre no **modo demonstração**, com dados de ex
    (veja `.env.example`) e para as variáveis de ambiente da Vercel:
    `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
 
-Revendedoras são criadas pelo próprio dono no app (Equipe › Nova revendedora).
+Revendedoras são criadas pelo próprio dono no app (Equipe › Nova revendedora), sem cadastro público.
 Todos entram com **e-mail ou celular** (qualquer formato: `+55 21 99999-9999`, `21999999999`…).
 Uma conta de e-mail pode ter também um celular (`profiles.phone`, só dígitos com 55): o login por
 celular descobre o e-mail pela função `login_email`. Revendedora criada só com celular vira
