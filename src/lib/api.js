@@ -13,7 +13,7 @@ const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const IS_DEMO = !URL || !KEY;
 
 const KIT_SELECT =
-  '*, reseller:profiles!kits_reseller_id_fkey(id,name,login,commission_pct,bonus_amount,goal_amount,goal_type), items:kit_items(*, piece:pieces(*))';
+  '*, reseller:profiles!kits_reseller_id_fkey(id,name,login,phone,commission_pct,bonus_amount,goal_amount,goal_type), items:kit_items(*, piece:pieces(*))';
 
 function createSupabaseApi() {
   const sb = createClient(URL, KEY);
@@ -84,6 +84,7 @@ function createSupabaseApi() {
           price: Number(p.price) || 0,
           stock_qty: Number(p.stock_qty) || 0,
           category: p.category || 'outro',
+          min_stock: Math.max(0, Math.floor(Number(p.min_stock ?? 2))),
         };
         if (p.id) return must(await sb.from('pieces').update(row).eq('id', p.id).select().single());
         return must(await sb.from('pieces').insert({ ...row, brand_id: brandId }).select().single());

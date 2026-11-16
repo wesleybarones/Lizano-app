@@ -45,6 +45,13 @@ export default function Relatorios() {
     .filter((x) => x.value > 0)
     .sort((a, b) => b.value - a.value)
     .map((x, k) => ({ ...x, color: CHART_COLORS[k % CHART_COLORS.length] }));
+  const ranking = resellers
+    .map((r) => {
+      const its = doMes.filter((i) => i.kit.reseller_id === r.id);
+      return { id: r.id, name: r.name, qty: its.length, value: its.reduce((s2, i) => s2 + itemPrice(i), 0) };
+    })
+    .filter((r) => r.qty > 0)
+    .sort((a, b) => b.value - a.value || b.qty - a.qty);
   const comRev = kits.filter((k) => k.status === 'open').reduce((s, k) => s + k.items.filter((i) => !i.sold).length, 0);
   const estoque = pieces.reduce((s, p) => s + Math.max(0, p.stock_qty), 0);
   const onde = [
@@ -67,6 +74,25 @@ export default function Relatorios() {
         <div className="card"><Stat label="A receber em aberto" value={brl(emAberto)} /></div>
         <div className="card"><Stat label="Comissões do mês" value={brl(comissoes)} /></div>
       </div>
+      <section className="card">
+        <div className="chart-head"><h2>Ranking de revendedoras · {monthLabel(mes).toLowerCase()}</h2></div>
+        {ranking.length === 0 ? (
+          <p className="row__meta">Nenhuma venda no mês.</p>
+        ) : (
+          <div className="rank">
+            {ranking.map((r, k) => (
+              <div key={r.id} className="rank__row">
+                <span className={`rank__pos rank__pos--${k + 1}`} aria-label={`${k + 1}º lugar`}>{k + 1}º</span>
+                <div className="row__main">
+                  <span className="row__title">{r.name}</span>
+                  <span className="row__meta">{r.qty} {r.qty === 1 ? 'peça vendida' : 'peças vendidas'}</span>
+                </div>
+                <b style={{ fontSize: 14 }}>{brl(r.value)}</b>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
       <PieBars title="Vendas por mês" items={porMes} />
       <PieBars title="Vendas por revendedora" items={porRev} />
       <PieBars title="Onde estão as peças" items={onde} money={false} />

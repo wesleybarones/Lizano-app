@@ -1,10 +1,11 @@
 import { useStore } from '../../store';
 import { Empty, Loading, Screen } from '../../components/ui';
+import ReceiptButton from '../../components/ReceiptButton';
 import { kitTotals } from '../../lib/calc';
 import { brl, shortDate } from '../../lib/format';
 
 export default function Historico() {
-  const { kits, loaded } = useStore();
+  const { kits, loaded, me } = useStore();
   const fechadas = kits.filter((k) => k.status === 'settled');
   return (
     <Screen title="Histórico" sub="Suas maletas e acertos anteriores.">
@@ -31,6 +32,7 @@ export default function Historico() {
                   <div className="stat"><span className="stat__label">Bônus</span><b>{brl(t.bonus)}</b></div>
                 </div>
                 <div className="row" style={{ minHeight: 36 }}><span className="row__meta">Repassado</span><b>{brl(t.receivable)}</b></div>
+                <ReceiptButton kit={k} brand={me?.brand_name || 'Lizano'} className="mini-btn" label="Baixar comprovante (PDF)" />
               </div>
             );
           })}

@@ -3,12 +3,15 @@ import { Link, useParams } from 'react-router-dom';
 import { useAction, useStore } from '../../store';
 import { api } from '../../lib/api';
 import { ErrorMsg, Loading, Screen } from '../../components/ui';
+import ReceiptButton from '../../components/ReceiptButton';
+import WaButton from '../../components/WaButton';
+import { phoneOf, waLink } from '../../lib/whatsapp';
 import { kitTotals } from '../../lib/calc';
 import { brl, dateBR, goalText, pct, shortDate } from '../../lib/format';
 
 export default function Acerto() {
   const { id } = useParams();
-  const { kits, loaded } = useStore();
+  const { kits, loaded, me } = useStore();
   const { busy, error, run } = useAction();
   const [ajuste, setAjuste] = useState('');
   const [confirmar, setConfirmar] = useState(false);
@@ -80,6 +83,16 @@ export default function Acerto() {
         <button type="button" className="btn btn--ghost" disabled={busy} onClick={() => run(() => api.kits.markPaid(k.id, false))}>Desmarcar pagamento</button>
       ) : (
         <button type="button" className="btn btn--primary" disabled={busy} onClick={() => run(() => api.kits.markPaid(k.id, true))}>Marcar como pago</button>
+      )}
+      {!open && (
+        <div className="btns" style={{ alignItems: 'center' }}>
+          <ReceiptButton kit={k} brand={me?.brand_name || 'Lizano'} label="Comprovante (PDF)" />
+          {!k.paid_at && (
+            <WaButton href={waLink(phoneOf(k.reseller), `Oi, ${k.reseller?.name?.split(' ')[0] || ''}! O acerto da maleta nº ${k.number} ficou em ${brl(t.receivable)} (vendido ${brl(t.soldTotal)}, comissão ${brl(t.commission)}${t.bonus ? `, bônus ${brl(t.bonus)}` : ''}). Me avisa quando fizer o pagamento, por favor. Obrigada!`)}>
+              Cobrar
+            </WaButton>
+          )}
+        </div>
       )}
       <Link to={`/maletas/${k.id}`} className="btn btn--link">Voltar para a maleta</Link>
     </Screen>

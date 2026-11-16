@@ -28,7 +28,7 @@ function seed() {
     rev('u-simone', 'Simone Alves', 'simone', 30, 0, 0),
   ];
   const pc = (id, code, name, cost, price, stock) => ({
-    id, brand_id: 'b1', code, name, photo_url: null, cost, price, stock_qty: stock, category: guessCategory(name) || 'outro',
+    id, brand_id: 'b1', code, name, photo_url: null, cost, price, stock_qty: stock, min_stock: 2, category: guessCategory(name) || 'outro',
   });
   const pieces = [
     pc('p1', 'CL-031', 'Colar ponto de luz', 32, 89.9, 30),
@@ -172,6 +172,7 @@ export function createDemoApi() {
           code, name: p.name.trim(), photo_url: p.photo_url || null,
           cost: Number(p.cost) || 0, price: Number(p.price) || 0, stock_qty: Number(p.stock_qty) || 0,
           category: p.category || 'outro',
+          min_stock: Math.max(0, Math.floor(Number(p.min_stock ?? 2))),
         };
         if (p.id) Object.assign(piece(p.id), row);
         else db.pieces.push({ id: uid(), brand_id: 'b1', ...row });

@@ -20,7 +20,7 @@ export default function Vender() {
   const total = disponiveis.filter((i) => sel.includes(i.id)).reduce((s, i) => s + Number(i.piece?.price || 0), 0);
 
   async function confirmar() {
-    if (await run(() => api.kits.markSold(sel, true))) nav('/numeros');
+    if (await run(() => api.kits.markSold(sel, true))) nav('/', { state: { sold: sel.length } });
   }
   return (
     <Screen title="Marcar venda" sub="Toque nas peças que você vendeu.">

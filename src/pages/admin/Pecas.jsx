@@ -67,7 +67,10 @@ function PieceRow({ p, naRua, onLong }) {
         <span className="row__title">{p.name}</span>
         <span className="row__meta">{p.code} · {p.stock_qty} no estoque · {naRua} na rua</span>
       </div>
-      <span className="row__value">{brl(p.price)}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+        <span className="row__value">{brl(p.price)}</span>
+        {Number(p.min_stock ?? 2) > 0 && p.stock_qty <= Number(p.min_stock ?? 2) && <span className="pill pill--repor">Repor</span>}
+      </div>
     </Link>
   );
 }
