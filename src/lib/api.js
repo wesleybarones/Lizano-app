@@ -129,6 +129,10 @@ function createSupabaseApi() {
         );
         return rules;
       },
+      async resetPassword(id, password) {
+        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        must(await sb.rpc('reset_reseller_password', { p_user: id, p_password: password }));
+      },
     },
 
     kits: {

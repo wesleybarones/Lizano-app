@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAction, useStore } from '../../store';
 import { api, IS_DEMO } from '../../lib/api';
@@ -55,13 +55,15 @@ export default function RevendedoraForm() {
         <div className="field">
           <label htmlFor="login">Celular ou e-mail (login)</label>
           <input id="login" className="input" required value={form.login} onChange={set('login')} disabled={!!id}
+            autoCapitalize="none" autoCorrect="off" spellCheck={false}
             placeholder="21999999999" />
           {id && <span className="hint">O login não muda depois de criado.</span>}
         </div>
         {!id && (
           <div className="field">
             <label htmlFor="senha">Senha inicial</label>
-            <input id="senha" className="input" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input id="senha" className="input" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+              autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false} />
             <span className="hint">Mínimo de 6 caracteres. Você envia para ela junto com o login.</span>
           </div>
         )}
@@ -103,6 +105,59 @@ export default function RevendedoraForm() {
         <ErrorMsg>{error}</ErrorMsg>
         <button className="btn btn--primary" type="submit" disabled={busy}>{busy ? 'Salvando…' : 'Salvar'}</button>
       </form>
+      {id && <ResetPassword id={id} name={form.name} />}
     </Screen>
+  );
+}
+
+/* O dono define uma senha nova para a revendedora (ex.: esqueceu a senha) */
+function ResetPassword({ id, name }) {
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [error, setError] = useState('');
+  const ref = useRef(null);
+  useEffect(() => {
+    if (open) ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [open]);
+  async function submit(e) {
+    e.preventDefault();
+    setBusy(true);
+    setError('');
+    try {
+      await api.resellers.resetPassword(id, pw);
+      setMsg(`Senha nova de ${name || 'revendedora'}: ${pw}. Envie para ela.`);
+      setPw('');
+      setOpen(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (!open) {
+    return (
+      <>
+        {msg && <div className="ok-msg" role="status">{msg}</div>}
+        <button type="button" className="btn btn--ghost" onClick={() => { setOpen(true); setMsg(''); }}>Redefinir senha</button>
+      </>
+    );
+  }
+  return (
+    <form ref={ref} className="card stack" onSubmit={submit}>
+      <b>Redefinir senha</b>
+      <div className="field">
+        <label htmlFor="nova-senha">Senha nova para {name || 'a revendedora'}</label>
+        <input id="nova-senha" className="input" required minLength={6} value={pw} onChange={(e) => setPw(e.target.value)}
+          autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false} />
+        <span className="row__meta">Mínimo de 6 caracteres. Confira maiúsculas e minúsculas antes de salvar.</span>
+      </div>
+      <ErrorMsg>{error}</ErrorMsg>
+      <div className="btns">
+        <button type="button" className="btn btn--ghost" onClick={() => setOpen(false)}>Cancelar</button>
+        <button type="submit" className="btn btn--primary" disabled={busy}>{busy ? 'Salvando…' : 'Salvar senha'}</button>
+      </div>
+    </form>
   );
 }

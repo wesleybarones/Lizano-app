@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { brl, CATEGORIES, initials, pct } from '../lib/format';
 
@@ -56,8 +56,12 @@ export function Screen({ title, sub, back, action, children }) {
   const admin = me?.role === 'admin';
   const first = me?.name?.split(' ')[0] || '';
   const eyebrow = admin ? `${me?.brand_name || 'Lizano'} · Painel do dono` : `${me?.brand_name || 'Lizano'} · Olá, ${first}`;
+  const tabs = admin ? ADMIN_TABS : REV_TABS;
+  const swipe = useTabSwipe(tabs);
+  const loc = useLocation();
+  const enter = loc.state?.swipe; // 'left' | 'right': de que lado a tela entra
   return (
-    <div className="app">
+    <div className="app" {...swipe} data-enter={enter || undefined}>
       <header className="top">
         {back && (
           <Link to={back} className="back">
@@ -77,7 +81,7 @@ export function Screen({ title, sub, back, action, children }) {
       <main className="main">{children}</main>
       <nav className="nav" aria-label={admin ? 'Menu do painel' : 'Menu da revendedora'}>
         <div className="nav__inner">
-          {(admin ? ADMIN_TABS : REV_TABS).map(([to, label, icon]) => (
+          {tabs.map(([to, label, icon]) => (
             <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => (isActive ? 'active' : '')}>
               <Icon name={icon} />
               <span>{label}</span>
@@ -87,6 +91,42 @@ export function Screen({ title, sub, back, action, children }) {
       </nav>
     </div>
   );
+}
+
+/*
+ * Deslizar o dedo para o lado troca de aba do menu de baixo.
+ * Ignora: gesto mais vertical que horizontal (rolagem), começo na borda da tela
+ * (gesto de voltar do iPhone), faixas que rolam para o lado, campos e janelas.
+ */
+function useTabSwipe(tabs) {
+  const nav = useNavigate();
+  const { pathname } = useLocation();
+  const start = useRef(null);
+  const current = tabs.findIndex(([to]) => (to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`)));
+  return {
+    onTouchStart(e) {
+      start.current = null;
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      const el = e.target;
+      if (t.clientX < 24 || t.clientX > window.innerWidth - 24) return;
+      if (el.closest?.('.chips, .toggle, input, textarea, select, .lightbox, .sheet-bg, .pick, .qty, [data-noswipe]')) return;
+      start.current = { x: t.clientX, y: t.clientY, time: Date.now() };
+    },
+    onTouchEnd(e) {
+      const s = start.current;
+      start.current = null;
+      if (!s || current < 0) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - s.x;
+      const dy = t.clientY - s.y;
+      const fast = Date.now() - s.time < 700;
+      if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.8 || !fast) return;
+      const next = current + (dx < 0 ? 1 : -1);
+      if (next < 0 || next >= tabs.length) return;
+      nav(tabs[next][0], { state: { swipe: dx < 0 ? 'right' : 'left' } });
+    },
+  };
 }
 
 /* Botão do perfil no topo: logo da empresa (dono) ou iniciais (revendedora) */

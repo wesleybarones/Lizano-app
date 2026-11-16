@@ -47,7 +47,7 @@ export default function Login() {
         <form className="stack" style={{ gap: 16 }} onSubmit={submit}>
           <div className="field">
             <label htmlFor="login">Celular ou e-mail</label>
-            <input id="login" className="input" autoComplete="username" placeholder="Ex.: 21 99999-9999 ou nome@email.com" value={login}
+            <input id="login" className="input" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} placeholder="Ex.: 21 99999-9999 ou nome@email.com" value={login}
               onChange={(e) => setLogin(e.target.value)} required />
           </div>
           <div className="field">

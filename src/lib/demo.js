@@ -216,6 +216,12 @@ export function createDemoApi() {
         save();
         return wait(rules);
       },
+      async resetPassword(id, password) {
+        guardAdmin();
+        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        db.profiles.find((p) => p.id === id).password = password;
+        save();
+      },
     },
     kits: {
       async list() {
