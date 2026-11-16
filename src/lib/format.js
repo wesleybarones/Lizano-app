@@ -48,6 +48,7 @@ export const CATEGORIES = [
   { id: 'brinco', label: 'Brincos', one: 'Brinco' },
   { id: 'colar', label: 'Colares', one: 'Colar' },
   { id: 'pulseira', label: 'Pulseiras', one: 'Pulseira' },
+  { id: 'anel', label: 'Anéis', one: 'Anel' },
   { id: 'outro', label: 'Outros', one: 'Outro' },
 ];
 export const catOne = (id) => CATEGORIES.find((c) => c.id === id)?.one || 'Outro';
@@ -57,5 +58,6 @@ export function guessCategory(name) {
   if (n.includes('brinco')) return 'brinco';
   if (/colar|gargantilha|corrente/.test(n)) return 'colar';
   if (/pulseira|bracelete/.test(n)) return 'pulseira';
+  if (/\banel\b|an[eé]is/.test(n)) return 'anel';
   return '';
 }

@@ -8,7 +8,7 @@
 import { addDays, guessCategory, isEmail, normalizePhone, today } from './format';
 import { blobToDataUrl, prepareImage } from './image';
 
-const KEY = 'barones-consignado-demo-v4';
+const KEY = 'barones-consignado-demo-v5';
 const listeners = new Set();
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2));
 const wait = (v) => new Promise((r) => setTimeout(() => r(structuredClone(v)), 120));
