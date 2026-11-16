@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../../store';
 import { Empty, Loading, Screen } from '../../components/ui';
 import { kitTotals } from '../../lib/calc';
-import { brl, goalText, initials, pct } from '../../lib/format';
+import { brl, dateBR, goalText, initials, pct } from '../../lib/format';
+import { TERMS_VERSION } from '../../lib/terms';
 
 export default function Equipe() {
   const { resellers, kits, loaded } = useStore();
@@ -25,6 +26,11 @@ export default function Equipe() {
                 <div className="avatar" aria-hidden="true">{initials(r.name)}</div>
                 <div className="item__main">
                   <span className="row__title">{r.name}{r.active === false ? ' (inativa)' : ''}</span>
+                  <span className={`row__meta ${r.terms_version === TERMS_VERSION ? '' : 'terms-pending'}`} style={{ fontSize: 11 }}>
+                    {r.terms_version === TERMS_VERSION
+                      ? `✓ Termos aceitos em ${dateBR(r.terms_accepted_at)}`
+                      : r.terms_version ? 'Termos atualizados: aceite pendente' : 'Termos ainda não aceitos'}
+                  </span>
                   <span className="row__meta">
                     Comissão {pct(r.commission_pct)}{Number(r.goal_amount) > 0 ? ` · meta ${goalText(r.goal_type, r.goal_amount)}` : ''} · {atual ? `maleta nº ${atual.number}` : 'sem maleta'}
                   </span>

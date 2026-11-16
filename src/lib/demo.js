@@ -137,6 +137,10 @@ export function createDemoApi() {
       async current() {
         return wait(meFull());
       },
+      async acceptTerms(version) {
+        Object.assign(me(), { terms_version: version, terms_accepted_at: new Date().toISOString() });
+        save();
+      },
       async changePassword(password) {
         if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
         me().password = password;

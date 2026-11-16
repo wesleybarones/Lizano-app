@@ -54,6 +54,9 @@ function createSupabaseApi() {
         const { data } = await sb.auth.getSession();
         return data.session ? profileOf(data.session.user.id) : null;
       },
+      async acceptTerms(version) {
+        must(await sb.rpc('accept_terms', { p_version: version }));
+      },
       async changePassword(password) {
         if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
         const { error } = await sb.auth.updateUser({ password });

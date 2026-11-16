@@ -247,3 +247,16 @@ select.input { appearance: auto; }
 
 .sheet__list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #45484f; }
 .sheet__list b { color: #7a3b12; }
+
+/* Termos de uso e privacidade */
+.terms-box { max-height: 52dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+.terms-box--full { max-height: none; }
+.terms { display: flex; flex-direction: column; gap: 14px; font-size: 14px; line-height: 1.5; color: #45484f; }
+.terms__doc { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--navy); margin: 6px 0 2px; }
+.terms__sec h3 { font-size: 14px; font-weight: 700; color: var(--navy); margin: 0 0 4px; }
+.terms__sec p { margin: 0 0 6px; }
+.terms__sec ul { margin: 0 0 6px; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.terms__date { font-size: 12px; color: var(--ink-2); }
+.terms-check { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; line-height: 1.4; cursor: pointer; min-height: 44px; padding-top: 4px; }
+.terms-check input { width: 22px; height: 22px; flex-shrink: 0; margin: 0; accent-color: var(--gold); }
+.terms-pending { color: #b4532a !important; font-weight: 600; }

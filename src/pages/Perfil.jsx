@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { api } from '../lib/api';
 import { ErrorMsg, Screen } from '../components/ui';
@@ -27,6 +27,7 @@ export default function Perfil() {
         </div>
       )}
       <Senha />
+      <Link to="/termos" className="btn btn--link">Termos de uso e privacidade</Link>
       <button type="button" className="btn btn--ghost" onClick={sair}>Sair do app</button>
     </Screen>
   );

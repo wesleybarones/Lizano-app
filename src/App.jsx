@@ -5,6 +5,9 @@ import { StoreProvider, useStore } from './store';
 import { Loading } from './components/ui';
 import Login from './pages/Login';
 import Perfil from './pages/Perfil';
+import Termos from './pages/Termos';
+import AceiteTermos from './pages/rev/AceiteTermos';
+import { TERMS_VERSION } from './lib/terms';
 import Inicio from './pages/admin/Inicio';
 import Pecas from './pages/admin/Pecas';
 import PecaForm from './pages/admin/PecaForm';
@@ -45,10 +48,13 @@ function Routed() {
         <Route path="/relatorios" element={<Relatorios />} />
         <Route path="/relatorios/abc" element={<CurvaABC />} />
         <Route path="/perfil" element={<Perfil />} />
+        <Route path="/termos" element={<Termos />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
+  // revendedora só usa o app depois de aceitar a versão atual dos termos
+  if (me.terms_version !== TERMS_VERSION) return <AceiteTermos />;
   return (
     <Routes>
       <Route path="/" element={<MinhaMaleta />} />
@@ -56,6 +62,7 @@ function Routed() {
       <Route path="/numeros" element={<MeusNumeros />} />
       <Route path="/historico" element={<Historico />} />
       <Route path="/perfil" element={<Perfil />} />
+      <Route path="/termos" element={<Termos />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
