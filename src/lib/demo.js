@@ -287,6 +287,16 @@ export function createDemoApi() {
         db.kits.find((x) => x.id === kitId).paid_at = paid ? new Date().toISOString() : null;
         save();
       },
+      async remove(kitId) {
+        guardAdmin();
+        const k = db.kits.find((x) => x.id === kitId);
+        if (k.status === 'open') {
+          for (const it of db.items.filter((i) => i.kit_id === kitId && !i.sold)) piece(it.piece_id).stock_qty += 1;
+        }
+        db.items = db.items.filter((i) => i.kit_id !== kitId);
+        db.kits = db.kits.filter((x) => x.id !== kitId);
+        save();
+      },
     },
     subscribe(cb) {
       listeners.add(cb);

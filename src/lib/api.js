@@ -161,6 +161,9 @@ function createSupabaseApi() {
       async markPaid(kitId, paid = true) {
         must(await sb.rpc('mark_paid', { p_kit: kitId, p_paid: paid }));
       },
+      async remove(kitId) {
+        must(await sb.rpc('delete_kit', { p_kit: kitId }));
+      },
     },
 
     // Avisa quando peças, maletas ou vendas mudam (preço novo aparece na hora)

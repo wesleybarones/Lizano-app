@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import DeleteKit from '../../components/DeleteKit';
 import { useAction, useStore } from '../../store';
 import { api } from '../../lib/api';
 import { ErrorMsg, Loading, Screen, Stat } from '../../components/ui';
@@ -10,7 +11,9 @@ import { kitStatus } from './Maletas';
 
 export default function Maleta() {
   const { id } = useParams();
-  const { kits, pieces, me, loaded } = useStore();
+  const { kits, pieces, me, loaded, reload } = useStore();
+  const nav = useNavigate();
+  const [del, setDel] = useState(false);
   const { busy, error, run } = useAction();
   const [adding, setAdding] = useState(false);
   const [qty, setQty] = useState({});
@@ -91,6 +94,8 @@ export default function Maleta() {
         </div>
       )}
       {!open && <Link to={`/maletas/${k.id}/acerto`} className="btn btn--primary">Ver acerto</Link>}
+      <button type="button" className="btn btn--link" style={{ color: '#f2b48e' }} onClick={() => setDel(true)}>Excluir maleta</button>
+      {del && <DeleteKit kit={k} onClose={() => setDel(false)} onDone={async () => { await reload(); nav('/maletas', { replace: true }); }} />}
     </Screen>
   );
 }

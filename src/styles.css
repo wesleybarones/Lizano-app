@@ -244,3 +244,6 @@ select.input { appearance: auto; }
 @keyframes enter-right { from { transform: translateX(36px); opacity: 0.4; } to { transform: none; opacity: 1; } }
 @keyframes enter-left { from { transform: translateX(-36px); opacity: 0.4; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .app[data-enter] .main, .app[data-enter] .top { animation: none; } }
+
+.sheet__list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #45484f; }
+.sheet__list b { color: #7a3b12; }
