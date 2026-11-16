@@ -6,6 +6,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { isEmail, loginToEmail, normalizePhone } from './format';
 import { createDemoApi } from './demo';
+import { prepareImage } from './image';
 
 const URL = import.meta.env.VITE_SUPABASE_URL;
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -86,9 +87,9 @@ function createSupabaseApi() {
         return must(await sb.from('pieces').insert({ ...row, brand_id: brandId }).select().single());
       },
       async uploadPhoto(file, brandId) {
-        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-        const path = `${brandId}/${crypto.randomUUID()}.${ext}`;
-        must(await sb.storage.from('pecas').upload(path, file, { contentType: file.type }));
+        const jpg = await prepareImage(file);
+        const path = `${brandId}/${crypto.randomUUID()}.jpg`;
+        must(await sb.storage.from('pecas').upload(path, jpg, { contentType: 'image/jpeg', cacheControl: '31536000' }));
         return sb.storage.from('pecas').getPublicUrl(path).data.publicUrl;
       },
     },

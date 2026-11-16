@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { api } from '../lib/api';
 import { ErrorMsg, Screen } from '../components/ui';
+import PhotoPicker from '../components/PhotoPicker';
 import { initials } from '../lib/format';
 
 export default function Perfil() {
@@ -41,19 +42,6 @@ function Empresa({ me, onSaved }) {
     setLogo(me.brand_logo || '');
   }, [me.brand_name, me.brand_logo]);
 
-  async function onPhoto(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setBusy(true);
-    setError('');
-    try {
-      setLogo(await api.pieces.uploadPhoto(file, me.brand_id));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  }
   async function submit(e) {
     e.preventDefault();
     setBusy(true);
@@ -73,14 +61,12 @@ function Empresa({ me, onSaved }) {
     <form className="card stack" onSubmit={submit}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <div className="logo-big">{logo ? <img src={logo} alt="Logo da empresa" /> : initials(name)}</div>
-        <div className="field" style={{ flex: 1 }}>
-          <span className="row__meta">Logo ou foto da empresa</span>
-          <label className="file-btn">
-            {logo ? 'Trocar foto' : 'Escolher foto'}
-            <input id="logo" type="file" accept="image/*" onChange={onPhoto} aria-label="Escolher logo ou foto da empresa" />
-          </label>
-          {logo && <button type="button" className="btn btn--link" style={{ color: 'var(--gold-dark)', alignSelf: 'flex-start', padding: 0 }} onClick={() => setLogo('')}>Remover foto</button>}
-        </div>
+        <PhotoPicker
+          label="Logo ou foto da empresa"
+          hasPhoto={!!logo}
+          onPick={async (file) => setLogo(await api.pieces.uploadPhoto(file, me.brand_id))}
+          onRemove={() => setLogo('')}
+        />
       </div>
       <div className="field">
         <label htmlFor="empresa">Nome da empresa</label>
