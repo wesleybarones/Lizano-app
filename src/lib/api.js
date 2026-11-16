@@ -72,7 +72,7 @@ function createSupabaseApi() {
 
     pieces: {
       async list() {
-        return must(await sb.from('pieces').select('*').order('name'));
+        return must(await sb.from('pieces').select('*').eq('archived', false).order('name'));
       },
       async save(p, brandId) {
         const row = {
@@ -86,6 +86,10 @@ function createSupabaseApi() {
         };
         if (p.id) return must(await sb.from('pieces').update(row).eq('id', p.id).select().single());
         return must(await sb.from('pieces').insert({ ...row, brand_id: brandId }).select().single());
+      },
+      // 'deleted' (apagada) ou 'archived' (tinha histórico: some das listas)
+      async remove(id) {
+        return must(await sb.rpc('delete_piece', { p_piece: id }));
       },
       async uploadPhoto(file, brandId) {
         const jpg = await prepareImage(file);

@@ -5,15 +5,17 @@ import { api } from '../../lib/api';
 import { CATEGORIES, guessCategory } from '../../lib/format';
 import { ErrorMsg, Loading, Screen, Thumb } from '../../components/ui';
 import PhotoPicker from '../../components/PhotoPicker';
+import DeletePiece from '../../components/DeletePiece';
 
 const EMPTY = { code: '', name: '', cost: '', price: '', stock_qty: '', photo_url: '', category: '' };
 
 export default function PecaForm() {
   const { id } = useParams();
-  const { pieces, me, loaded } = useStore();
+  const { pieces, me, loaded, reload } = useStore();
   const nav = useNavigate();
   const { busy, error, run } = useAction();
   const [form, setForm] = useState(EMPTY);
+  const [del, setDel] = useState(false);
   const existing = id ? pieces.find((p) => p.id === id) : null;
 
   useEffect(() => {
@@ -82,7 +84,13 @@ export default function PecaForm() {
         </div>
         <ErrorMsg>{error}</ErrorMsg>
         <button className="btn btn--primary" type="submit" disabled={busy}>{busy ? 'Salvando…' : 'Salvar peça'}</button>
+        {existing && (
+          <button type="button" className="btn btn--link" style={{ color: '#f2b48e' }} onClick={() => setDel(true)}>Excluir peça</button>
+        )}
       </form>
+      {del && existing && (
+        <DeletePiece piece={existing} onClose={() => setDel(false)} onDone={async () => { await reload(); nav('/pecas'); }} />
+      )}
     </Screen>
   );
 }

@@ -153,7 +153,7 @@ export function createDemoApi() {
     },
     pieces: {
       async list() {
-        if (isAdmin()) return wait([...db.pieces].sort((a, b) => a.name.localeCompare(b.name)));
+        if (isAdmin()) return wait(db.pieces.filter((p) => !p.archived).sort((a, b) => a.name.localeCompare(b.name)));
         const mine = new Set(db.kits.filter((k) => k.reseller_id === db.session).map((k) => k.id));
         const ids = new Set(db.items.filter((i) => mine.has(i.kit_id)).map((i) => i.piece_id));
         return wait(db.pieces.filter((p) => ids.has(p.id)));
@@ -173,6 +173,19 @@ export function createDemoApi() {
         else db.pieces.push({ id: uid(), brand_id: 'b1', ...row });
         save();
         return wait(row);
+      },
+      async remove(id) {
+        guardAdmin();
+        const items = db.items.filter((i) => i.piece_id === id);
+        const naRua = items.some((i) => !i.sold && db.kits.find((k) => k.id === i.kit_id)?.status === 'open');
+        if (naRua) throw new Error('Esta peça está numa maleta na rua. Tire da maleta antes de excluir.');
+        let r = 'deleted';
+        if (items.length) {
+          piece(id).archived = true;
+          r = 'archived';
+        } else db.pieces = db.pieces.filter((p) => p.id !== id);
+        save();
+        return r;
       },
       async uploadPhoto(file) {
         return blobToDataUrl(await prepareImage(file, 360)); // pequeno: fica guardado no navegador
