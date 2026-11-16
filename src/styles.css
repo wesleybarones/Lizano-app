@@ -321,3 +321,7 @@ html[data-theme='light'] .login .demo-box { color: var(--on-dark-2); }
 .particles { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
 .app, .login { position: relative; z-index: 1; }
 html[data-theme='light'] .particles { display: none; }
+.toggle--full { width: 100%; }
+.toggle--full button { flex: 1; }
+html[data-theme='light'] .toggle button[aria-pressed='true'] { background: var(--navy); color: var(--gold-light); }
+html[data-theme='light'] .btn--link { color: var(--gold-dark); }

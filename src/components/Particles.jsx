@@ -87,6 +87,7 @@ export default function Particles() {
     function step(t) {
       raf = requestAnimationFrame(step);
       if (t - last < 33) return; // ~30 fps
+      if (document.documentElement.dataset.theme === 'light') { last = t; return; } // modo claro: sem partículas
       const dt = Math.min(0.1, (t - last) / 1000 || 0.033);
       last = t;
       if (!nextStar) nextStar = t + rand(6000, 14000);

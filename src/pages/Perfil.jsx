@@ -6,6 +6,7 @@ import { ErrorMsg, Screen } from '../components/ui';
 import PhotoPicker from '../components/PhotoPicker';
 import PasswordInput from '../components/PasswordInput';
 import { initials } from '../lib/format';
+import { getThemePref, setThemePref } from '../lib/theme';
 
 export default function Perfil() {
   const { me, signOut, refreshMe } = useStore();
@@ -26,6 +27,7 @@ export default function Perfil() {
           </div>
         </div>
       )}
+      <Aparencia />
       <Senha />
       <Link to="/termos" className="btn btn--link">Termos de uso e privacidade</Link>
       <button type="button" className="btn btn--ghost" onClick={sair}>Sair do app</button>
@@ -135,5 +137,25 @@ function Senha() {
         <button className="btn btn--primary" type="submit" disabled={busy}>Salvar senha</button>
       </div>
     </form>
+  );
+}
+
+/* Escolha de modo claro ou escuro */
+function Aparencia() {
+  const [pref, setPref] = useState(getThemePref);
+  const opts = [['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Escuro']];
+  const choose = (v) => { setPref(v); setThemePref(v); };
+  return (
+    <div className="card">
+      <div className="row__main">
+        <span className="row__title">Aparência</span>
+        <span className="row__meta">{pref === 'auto' ? 'Segue o modo claro ou escuro do celular.' : pref === 'light' ? 'Fundo claro, ótimo para usar no sol.' : 'Fundo azul-marinho da Lizano.'}</span>
+      </div>
+      <div className="toggle toggle--full" role="group" aria-label="Aparência do app">
+        {opts.map(([v, label]) => (
+          <button key={v} type="button" aria-pressed={pref === v} onClick={() => choose(v)}>{label}</button>
+        ))}
+      </div>
+    </div>
   );
 }

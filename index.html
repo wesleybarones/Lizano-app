@@ -118,6 +118,10 @@
         var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
         window.__splashMin = Date.now() + (quick || reduce ? 350 : 3800);
         if (quick) document.getElementById('splash').classList.add('is-quick');
+        try {
+          var th = localStorage.getItem('lz-theme') || 'auto';
+          if (th === 'light' || (th === 'auto' && matchMedia('(prefers-color-scheme: light)').matches)) document.documentElement.dataset.theme = 'light';
+        } catch (e) {}
       })();
     </script>
     <div id="root"></div>
