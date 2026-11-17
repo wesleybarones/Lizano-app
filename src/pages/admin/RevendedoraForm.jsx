@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAction, useStore } from '../../store';
 import { api, IS_DEMO } from '../../lib/api';
 import { ErrorMsg, Loading, Screen } from '../../components/ui';
+import { PASSWORD_MIN } from '../../lib/rules';
 
 const EMPTY = { name: '', login: '', commission_pct: '30', bonus_amount: '0', goal_amount: '0', goal_type: 'pieces', active: true };
 
@@ -62,9 +63,9 @@ export default function RevendedoraForm() {
         {!id && (
           <div className="field">
             <label htmlFor="senha">Senha inicial</label>
-            <input id="senha" className="input" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+            <input id="senha" className="input" required minLength={PASSWORD_MIN} value={password} onChange={(e) => setPassword(e.target.value)}
               autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false} />
-            <span className="hint">Mínimo de 6 caracteres. Você envia para ela junto com o login.</span>
+            <span className="hint">Mínimo de {PASSWORD_MIN} caracteres. Você envia para ela junto com o login.</span>
           </div>
         )}
         <h2 className="section-title">Regras</h2>
@@ -149,9 +150,9 @@ function ResetPassword({ id, name }) {
       <b>Redefinir senha</b>
       <div className="field">
         <label htmlFor="nova-senha">Senha nova para {name || 'a revendedora'}</label>
-        <input id="nova-senha" className="input" required minLength={6} value={pw} onChange={(e) => setPw(e.target.value)}
+        <input id="nova-senha" className="input" required minLength={PASSWORD_MIN} value={pw} onChange={(e) => setPw(e.target.value)}
           autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false} />
-        <span className="row__meta">Mínimo de 6 caracteres. Confira maiúsculas e minúsculas antes de salvar.</span>
+        <span className="row__meta">Mínimo de {PASSWORD_MIN} caracteres. Confira maiúsculas e minúsculas antes de salvar.</span>
       </div>
       <ErrorMsg>{error}</ErrorMsg>
       <div className="btns">

@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
+import { BRAND } from '../brand';
+import { PASSWORD_MIN } from '../lib/rules';
 import { api } from '../lib/api';
 import { ErrorMsg, Screen } from '../components/ui';
 import PhotoPicker from '../components/PhotoPicker';
@@ -125,11 +127,11 @@ function Senha() {
       <b>Trocar senha</b>
       <div className="field">
         <label htmlFor="nova">Nova senha</label>
-        <PasswordInput id="nova" autoComplete="new-password" minLength={6} required value={pw} onChange={(e) => setPw(e.target.value)} />
+        <PasswordInput id="nova" autoComplete="new-password" minLength={PASSWORD_MIN} required value={pw} onChange={(e) => setPw(e.target.value)} />
       </div>
       <div className="field">
         <label htmlFor="nova2">Repita a nova senha</label>
-        <PasswordInput id="nova2" autoComplete="new-password" minLength={6} required value={pw2} onChange={(e) => setPw2(e.target.value)} />
+        <PasswordInput id="nova2" autoComplete="new-password" minLength={PASSWORD_MIN} required value={pw2} onChange={(e) => setPw2(e.target.value)} />
       </div>
       <ErrorMsg>{error}</ErrorMsg>
       <div className="btns">
@@ -149,7 +151,7 @@ function Aparencia() {
     <div className="card">
       <div className="row__main">
         <span className="row__title">Aparência</span>
-        <span className="row__meta">{pref === 'auto' ? 'Segue o modo claro ou escuro do celular.' : pref === 'light' ? 'Fundo claro, ótimo para usar no sol.' : 'Fundo azul-marinho da Lizano.'}</span>
+        <span className="row__meta">{pref === 'auto' ? 'Segue o modo claro ou escuro do celular.' : pref === 'light' ? 'Fundo claro, ótimo para usar no sol.' : `Fundo azul-marinho da ${BRAND.name}.`}</span>
       </div>
       <div className="toggle toggle--full" role="group" aria-label="Aparência do app">
         {opts.map(([v, label]) => (

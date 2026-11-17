@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 import { isEmail, loginToEmail, normalizePhone } from './format';
 import { createDemoApi } from './demo';
 import { prepareImage } from './image';
+import { checkPassword, minStockOf, PASSWORD_MIN } from './rules';
 
 const URL = import.meta.env.VITE_SUPABASE_URL;
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -58,7 +59,7 @@ function createSupabaseApi() {
         must(await sb.rpc('accept_terms', { p_version: version }));
       },
       async changePassword(password) {
-        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        checkPassword(password);
         const { error } = await sb.auth.updateUser({ password });
         if (error) throw new Error(traduz(error.message));
       },
@@ -84,7 +85,7 @@ function createSupabaseApi() {
           price: Number(p.price) || 0,
           stock_qty: Number(p.stock_qty) || 0,
           category: p.category || 'outro',
-          min_stock: Math.max(0, Math.floor(Number(p.min_stock ?? 2))),
+          min_stock: minStockOf(p),
         };
         if (p.id) return must(await sb.from('pieces').update(row).eq('id', p.id).select().single());
         return must(await sb.from('pieces').insert({ ...row, brand_id: brandId }).select().single());
@@ -118,7 +119,7 @@ function createSupabaseApi() {
           return must(await sb.from('profiles').update({ ...rules, active: r.active !== false }).eq('id', r.id).select().single());
         }
         if (!loginToEmail(r.login)) throw new Error('Informe o celular ou e-mail da revendedora.');
-        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        checkPassword(password);
         // conta criada pelo banco (só o dono pode); o cadastro público do Supabase fica desligado
         must(
           await sb.rpc('create_reseller', {
@@ -134,7 +135,7 @@ function createSupabaseApi() {
         return rules;
       },
       async resetPassword(id, password) {
-        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        checkPassword(password);
         must(await sb.rpc('reset_reseller_password', { p_user: id, p_password: password }));
       },
     },
@@ -187,7 +188,7 @@ function traduz(msg = '') {
   if (/already registered|already exists|Já existe/i.test(msg)) return 'Já existe um acesso com esse celular ou e-mail.';
   if (/duplicate key.*code/i.test(msg)) return 'Já existe uma peça com esse código.';
   if (/should be different/i.test(msg)) return 'A nova senha precisa ser diferente da atual.';
-  if (/password/i.test(msg)) return 'Senha inválida (mínimo de 6 caracteres).';
+  if (/password/i.test(msg)) return `Senha inválida (mínimo de ${PASSWORD_MIN} caracteres).`;
   if (/network|fetch/i.test(msg)) return 'Sem conexão. Tente de novo.';
   return msg;
 }

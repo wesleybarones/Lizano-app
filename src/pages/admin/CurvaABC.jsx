@@ -2,14 +2,15 @@ import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../../store';
 import { Empty, Loading, PieBars, Screen } from '../../components/ui';
-import { abcCurve, itemPrice } from '../../lib/calc';
+import { abcCurve, itemPrice, soldItems } from '../../lib/calc';
 import { brl, monthKey, monthLabel, today } from '../../lib/format';
-import { soldItems } from './Relatorios';
+import { BRAND } from '../../brand';
 
+const { navy, goldDark, goldLight, offwhite } = BRAND.colors;
 const CLS = {
-  A: { color: '#232D42', text: '#FBF8F3' },
-  B: { color: '#A8864A', text: '#232D42' },
-  C: { color: '#E2C998', text: '#232D42' },
+  A: { color: navy, text: offwhite },
+  B: { color: goldDark, text: navy },
+  C: { color: goldLight, text: navy },
 };
 
 export default function CurvaABC() {

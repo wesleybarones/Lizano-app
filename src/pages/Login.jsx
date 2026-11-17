@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store';
 import { api, IS_DEMO } from '../lib/api';
+import { BRAND } from '../brand';
 import { ErrorMsg, Monogram } from '../components/ui';
 import PasswordInput from '../components/PasswordInput';
 
@@ -41,7 +42,7 @@ export default function Login() {
           </div>
           <div className="stack" style={{ gap: 6 }}>
             <h1 style={{ fontSize: 18, fontWeight: 600 }}>Consignado</h1>
-            <p className="note" style={{ fontSize: 14 }}>Entre com o acesso que a Lizano criou para você.</p>
+            <p className="note" style={{ fontSize: 14 }}>Entre com o acesso que a {BRAND.name} criou para você.</p>
           </div>
         </div>
         <form className="stack" style={{ gap: 16 }} onSubmit={submit}>
@@ -56,7 +57,7 @@ export default function Login() {
           </div>
           <ErrorMsg>{error}</ErrorMsg>
           <button className="btn btn--primary" type="submit" disabled={busy}>{busy ? 'Entrando…' : 'Entrar'}</button>
-          <p className="note">Esqueceu a senha? Fale com a Lizano para criar uma nova.</p>
+          <p className="note">Esqueceu a senha? Fale com a {BRAND.name} para criar uma nova.</p>
         </form>
         {IS_DEMO && (
           <div className="demo-box">

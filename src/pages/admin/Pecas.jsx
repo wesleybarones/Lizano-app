@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useStore } from '../../store';
 import { byCategory, CategoryChips, Empty, Loading, Screen, Thumb } from '../../components/ui';
 import { brl } from '../../lib/format';
+import { needsRestock } from '../../lib/rules';
 
 export default function Pecas() {
   const { pieces, kits, loaded, reload } = useStore();
@@ -69,7 +70,7 @@ function PieceRow({ p, naRua, onLong }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
         <span className="row__value">{brl(p.price)}</span>
-        {Number(p.min_stock ?? 2) > 0 && p.stock_qty <= Number(p.min_stock ?? 2) && <span className="pill pill--repor">Repor</span>}
+        {needsRestock(p) && <span className="pill pill--repor">Repor</span>}
       </div>
     </Link>
   );

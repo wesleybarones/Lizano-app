@@ -106,4 +106,3 @@ export const TERMS = [
   },
 ];
 
-export const BRAND_PHONE = '(21) 98227-1402';

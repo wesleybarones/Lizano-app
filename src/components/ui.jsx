@@ -3,6 +3,9 @@ import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { brl, CATEGORIES, initials, pct } from '../lib/format';
+import { CHART_COLORS } from '../brand';
+
+export { CHART_COLORS };
 
 const ICONS = {
   home: 'M3 11l9-7 9 7v9h-6v-6H9v6H3z',
@@ -52,10 +55,10 @@ const REV_TABS = [
 ];
 
 export function Screen({ title, sub, back, action, children }) {
-  const { me } = useStore();
+  const { me, brandName, syncError } = useStore();
   const admin = me?.role === 'admin';
   const first = me?.name?.split(' ')[0] || '';
-  const eyebrow = admin ? `${me?.brand_name || 'Lizano'} · Painel do dono` : `${me?.brand_name || 'Lizano'} · Olá, ${first}`;
+  const eyebrow = admin ? `${brandName} · Painel do dono` : `${brandName} · Olá, ${first}`;
   const tabs = admin ? ADMIN_TABS : REV_TABS;
   const swipe = useTabSwipe(tabs);
   const loc = useLocation();
@@ -78,7 +81,10 @@ export function Screen({ title, sub, back, action, children }) {
           <ProfileButton me={me} admin={admin} />
         </div>
       </header>
-      <main className="main">{children}</main>
+      <main className="main">
+        {syncError && <ErrorMsg>Não foi possível atualizar os dados. Confira a internet: o que aparece aqui pode estar desatualizado.</ErrorMsg>}
+        {children}
+      </main>
       <nav className="nav" aria-label={admin ? 'Menu do painel' : 'Menu da revendedora'}>
         <div className="nav__inner">
           {tabs.map(([to, label, icon]) => (
@@ -222,7 +228,6 @@ export function Loading() {
 }
 
 /* Paleta dos gráficos: do azul-marinho ao dourado claro */
-export const CHART_COLORS = ['#232D42', '#A8864A', '#C9A869', '#E2C998', '#6B6F78', '#1A2232', '#EFE3C8'];
 
 /* Gráfico que abre em pizza e troca para barras (pedido do Wesley) */
 export function PieBars({ title, items, money = true, altLabel = 'Barras', alt }) {

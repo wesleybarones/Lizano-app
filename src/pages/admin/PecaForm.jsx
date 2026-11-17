@@ -3,11 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAction, useStore } from '../../store';
 import { api } from '../../lib/api';
 import { CATEGORIES, guessCategory } from '../../lib/format';
+import { DEFAULT_MIN_STOCK } from '../../lib/rules';
 import { ErrorMsg, Loading, Screen, Thumb } from '../../components/ui';
 import PhotoPicker from '../../components/PhotoPicker';
 import DeletePiece from '../../components/DeletePiece';
 
-const EMPTY = { code: '', name: '', cost: '', price: '', stock_qty: '', photo_url: '', category: '', min_stock: 2 };
+const EMPTY = { code: '', name: '', cost: '', price: '', stock_qty: '', photo_url: '', category: '', min_stock: DEFAULT_MIN_STOCK };
 
 export default function PecaForm() {
   const { id } = useParams();
@@ -66,7 +67,7 @@ export default function PecaForm() {
         </div>
         <div className="field">
           <label htmlFor="minimo">Estoque mínimo (aviso para repor)</label>
-          <input id="minimo" className="input" type="number" inputMode="numeric" min="0" step="1" value={form.min_stock ?? 2} onChange={set('min_stock')} />
+          <input id="minimo" className="input" type="number" inputMode="numeric" min="0" step="1" value={form.min_stock ?? DEFAULT_MIN_STOCK} onChange={set('min_stock')} />
           <span className="hint">Quando o estoque chegar nesse número, a peça aparece em "Peças para repor". Use 0 para não avisar.</span>
         </div>
         <div className="field">

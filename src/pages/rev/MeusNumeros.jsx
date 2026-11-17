@@ -5,7 +5,7 @@ import { brl, goalText, pct, shortDate } from '../../lib/format';
 import { currentKit } from './common';
 
 export default function MeusNumeros() {
-  const { kits, me, loaded } = useStore();
+  const { kits, me, loaded, brandName } = useStore();
   const k = currentKit(kits);
   if (!loaded) return <Screen title="Meus números"><Loading /></Screen>;
   if (!k) return <Screen title="Meus números"><Empty>Você não tem maleta no momento.</Empty></Screen>;
@@ -40,7 +40,7 @@ export default function MeusNumeros() {
         <div className="row"><span>Peças vendidas</span><b>{t.soldCount}</b></div>
         <div className="row"><span>Peças com você</span><b>{t.leftCount}</b></div>
       </div>
-      <p className="note">Comissão, bônus e meta são definidos pela Lizano.</p>
+      <p className="note">Comissão, bônus e meta são definidos pela {brandName}.</p>
     </Screen>
   );
 }

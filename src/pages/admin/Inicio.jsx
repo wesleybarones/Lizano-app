@@ -3,12 +3,12 @@ import { useStore } from '../../store';
 import { Empty, Loading, Screen, Stat, Thumb } from '../../components/ui';
 import WaButton from '../../components/WaButton';
 import { kitTotals } from '../../lib/calc';
-import { addDays, brl, shortDate, today } from '../../lib/format';
+import { minStockOf, needsRestock } from '../../lib/rules';
+import { addDays, brl, localDay, shortDate, today } from '../../lib/format';
 import { phoneOf, waLink } from '../../lib/whatsapp';
 
 const first = (name) => String(name || '').split(' ')[0];
-export const lowStock = (pieces) =>
-  pieces.filter((p) => Number(p.min_stock ?? 2) > 0 && p.stock_qty <= Number(p.min_stock ?? 2));
+const lowStock = (pieces) => pieces.filter(needsRestock);
 
 export default function Inicio() {
   const { kits, pieces, loaded } = useStore();
@@ -27,7 +27,7 @@ export default function Inicio() {
   const em7 = open.filter((k) => k.due_at && k.due_at <= addDays(hoje, 7)).length;
   const repor = lowStock(pieces);
   const vendasHoje = open.flatMap((k) =>
-    k.items.filter((i) => i.sold && String(i.sold_at || '').slice(0, 10) === hoje).map((i) => ({ ...i, kit: k })),
+    k.items.filter((i) => i.sold && localDay(i.sold_at) === hoje).map((i) => ({ ...i, kit: k })),
   );
 
   const lembrete = (k) => {
@@ -122,7 +122,7 @@ export default function Inicio() {
                 <Thumb piece={p} />
                 <div className="item__main">
                   <span className="row__title">{p.name}</span>
-                  <span className="row__meta">{p.code} · mínimo {p.min_stock ?? 2}</span>
+                  <span className="row__meta">{p.code} · mínimo {minStockOf(p)}</span>
                 </div>
                 <span className="pill pill--repor">{p.stock_qty} no estoque</span>
               </Link>

@@ -7,7 +7,7 @@ import TermsContent from '../../components/TermsContent';
 
 /* Tela obrigatória: a revendedora aceita os termos antes de usar o app */
 export default function AceiteTermos() {
-  const { me, refreshMe, signOut } = useStore();
+  const { me, refreshMe, signOut, brandName } = useStore();
   const [ok, setOk] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +30,7 @@ export default function AceiteTermos() {
       <header className="top">
         <span className="brand-mark" style={{ gap: 10 }}>
           <Monogram size={30} />
-          <span className="eyebrow">{me?.brand_name || 'Lizano'}</span>
+          <span className="eyebrow">{brandName}</span>
         </span>
         <h1 className="title">{atualizou ? 'Termos atualizados' : `Bem-vinda, ${first}`}</h1>
         <span className="sub">
@@ -41,7 +41,7 @@ export default function AceiteTermos() {
       </header>
       <main className="main" style={{ paddingBottom: 24 }}>
         <div className="card terms-box" tabIndex={0} aria-label="Termos de Uso e Política de Privacidade">
-          <TermsContent brand={me?.brand_name || 'Lizano'} />
+          <TermsContent brand={brandName} />
         </div>
         <label className="terms-check">
           <input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} />

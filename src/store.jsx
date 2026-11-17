@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from './lib/api';
+import { BRAND } from './brand';
 
 const Ctx = createContext(null);
 export const useStore = () => useContext(Ctx);
@@ -8,6 +9,7 @@ export const useStore = () => useContext(Ctx);
 export function StoreProvider({ children }) {
   const [me, setMe] = useState(undefined); // undefined = carregando, null = sem login
   const [data, setData] = useState({ pieces: [], kits: [], resellers: [], loaded: false });
+  const [syncError, setSyncError] = useState(false); // última recarga falhou: dados na tela podem estar velhos
   const timer = useRef();
 
   useEffect(() => {
@@ -24,9 +26,11 @@ export function StoreProvider({ children }) {
         admin ? api.resellers.list() : Promise.resolve([]),
       ]);
       setData({ pieces, kits, resellers, loaded: true });
+      setSyncError(false);
     } catch (e) {
-      // sessão trocada ou sem conexão: mantém os dados e tenta de novo na próxima mudança
+      // sessão trocada ou sem conexão: mantém os dados, avisa na tela e tenta de novo na próxima mudança
       console.warn('Falha ao recarregar dados:', e.message);
+      setSyncError(true);
     }
   }, [me]);
 
@@ -42,7 +46,9 @@ export function StoreProvider({ children }) {
   const value = useMemo(
     () => ({
       me,
+      brandName: me?.brand_name || BRAND.name,
       ...data,
+      syncError,
       reload,
       async signIn(login, password) {
         const m = await api.auth.signIn(login, password);
@@ -57,7 +63,7 @@ export function StoreProvider({ children }) {
         setMe(await api.auth.current());
       },
     }),
-    [me, data, reload],
+    [me, data, syncError, reload],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

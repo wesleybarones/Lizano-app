@@ -4,24 +4,22 @@ import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '../../store';
 import { CategoryChips, Empty, ErrorMsg, Loading, Screen, Stat, Thumb } from '../../components/ui';
 import WaButton from '../../components/WaButton';
-import { kitTotals } from '../../lib/calc';
+import { BRAND_WA } from '../../brand';
+import { itemPrice, kitTotals } from '../../lib/calc';
 import { addDays, brl, catOne, dateBR, shortDate, today } from '../../lib/format';
 import { shareOrDownload, warrantyPdf } from '../../lib/pdf';
 import { waLink } from '../../lib/whatsapp';
 import { currentKit } from './common';
 
-const BRAND_WA = '5521982271402';
-
 export default function MinhaMaleta() {
-  const { kits, loaded, me } = useStore();
+  const { kits, loaded, me, brandName: brand } = useStore();
   const loc = useLocation();
   const [cat, setCat] = useState('');
   const [garantia, setGarantia] = useState(null);
   const k = currentKit(kits);
   if (!loaded) return <Screen title="Minha maleta"><Loading /></Screen>;
-  if (!k) return <Screen title="Minha maleta"><Empty>Você não tem maleta no momento. Quando a Lizano enviar, ela aparece aqui.</Empty></Screen>;
+  if (!k) return <Screen title="Minha maleta"><Empty>Você não tem maleta no momento. Quando a {brand} enviar, ela aparece aqui.</Empty></Screen>;
   const t = kitTotals(k);
-  const brand = me?.brand_name || 'Lizano';
   const hoje = today();
   const filtro = (i) => !cat || (i.piece?.category || 'outro') === cat;
 
@@ -89,7 +87,7 @@ export default function MinhaMaleta() {
                 <Thumb piece={i.piece} />
                 <div className="item__main">
                   <span className="row__title">{i.piece?.name}</span>
-                  <span className="row__meta">Vendida em {shortDate(i.sold_at)} · {brl(i.price ?? i.piece?.price)}</span>
+                  <span className="row__meta">Vendida em {shortDate(i.sold_at)} · {brl(itemPrice(i))}</span>
                 </div>
                 <button type="button" className="mini-btn" onClick={() => setGarantia(i)}>Garantia</button>
               </div>

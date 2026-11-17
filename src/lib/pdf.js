@@ -4,23 +4,23 @@
  */
 import { kitTotals, itemPrice } from './calc';
 import { brl, dateBR, goalText, pct } from './format';
-import { BRAND_PHONE } from './terms';
+import { BRAND, rgb } from '../brand';
 
-const NAVY = [35, 45, 66];
-const NAVY_DEEP = [26, 34, 50];
-const GOLD = [201, 168, 105];
-const GOLD_LIGHT = [226, 201, 152];
-const GOLD_DARK = [168, 134, 74];
-const CREAM = [247, 242, 234];
-const INK2 = [107, 111, 120];
-const TEXT = [69, 72, 79];
+const NAVY = rgb(BRAND.colors.navy);
+const NAVY_DEEP = rgb(BRAND.colors.navyDeep);
+const GOLD = rgb(BRAND.colors.gold);
+const GOLD_LIGHT = rgb(BRAND.colors.goldLight);
+const GOLD_DARK = rgb(BRAND.colors.goldDark);
+const CREAM = rgb(BRAND.colors.cream);
+const INK2 = rgb(BRAND.colors.ink2);
+const TEXT = rgb(BRAND.colors.text);
 
 async function newDoc() {
   const { jsPDF } = await import('jspdf');
   return new jsPDF({ unit: 'mm', format: 'a5', compress: true });
 }
 
-// Símbolo da Lizano (as duas linhas do monograma)
+// Símbolo da marca (as duas linhas do monograma da Lizano)
 function monogram(doc, x, y, size, color = GOLD) {
   const P = (px, py) => [x + (px / 100) * size, y + (py / 100) * size];
   doc.setDrawColor(...color);
@@ -46,7 +46,7 @@ function header(doc, brand, kicker, title) {
   doc.setFont('times', 'normal');
   doc.setFontSize(15);
   doc.setCharSpace(2.2);
-  doc.text(String(brand || 'Lizano').toUpperCase(), W / 2, 25, { align: 'center' });
+  doc.text(String(brand || BRAND.name).toUpperCase(), W / 2, 25, { align: 'center' });
   doc.setCharSpace(0);
   doc.setTextColor(...GOLD_LIGHT);
   doc.setFont('helvetica', 'bold');
@@ -69,13 +69,13 @@ function footer(doc, brand) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(...INK2);
-  doc.text(`${brand} · WhatsApp ${BRAND_PHONE} · @uselizano · lizano.com.br`, W / 2, H - 9, { align: 'center' });
+  doc.text(`${brand} · WhatsApp ${BRAND.whatsapp} · ${BRAND.instagram} · ${BRAND.site}`, W / 2, H - 9, { align: 'center' });
 }
 
 // ------------------------------------------------------------------
 // Comprovante do acerto
 // ------------------------------------------------------------------
-export async function receiptPdf(kit, brand = 'Lizano') {
+export async function receiptPdf(kit, brand = BRAND.name) {
   const doc = await newDoc();
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -199,7 +199,7 @@ export async function receiptPdf(kit, brand = 'Lizano') {
 // ------------------------------------------------------------------
 // Certificado de garantia (1 ano, defeito de fabricação)
 // ------------------------------------------------------------------
-export async function warrantyPdf({ piece, soldAt, reseller, client, brand = 'Lizano' }) {
+export async function warrantyPdf({ piece, soldAt, reseller, client, brand = BRAND.name }) {
   const doc = await newDoc();
   const W = doc.internal.pageSize.getWidth();
   header(doc, brand, 'Certificado de garantia', '1 ano contra defeito de fabricação');

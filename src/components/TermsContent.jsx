@@ -1,8 +1,9 @@
-import { BRAND_PHONE, TERMS, TERMS_DATE } from '../lib/terms';
+import { BRAND } from '../brand';
+import { TERMS, TERMS_DATE } from '../lib/terms';
 
 /* Texto dos Termos de Uso e da Política de Privacidade */
-export default function TermsContent({ brand = 'Lizano' }) {
-  const fill = (t) => t.replaceAll('{brand}', brand).replaceAll('{phone}', BRAND_PHONE);
+export default function TermsContent({ brand = BRAND.name }) {
+  const fill = (t) => t.replaceAll('{brand}', brand).replaceAll('{phone}', BRAND.whatsapp);
   return (
     <div className="terms">
       {TERMS.map((doc) => (

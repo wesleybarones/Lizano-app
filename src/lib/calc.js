@@ -8,16 +8,31 @@
  *              o ADM escolhe para cada revendedora.
  *  a receber = vendido − comissão − bônus + ajuste do ADM
  */
+import { monthKey } from './format';
+
+// Preço que vale para o item: congelado no acerto ou o preço atual da peça
 export function itemPrice(item) {
   return Number(item.price ?? item.piece?.price ?? 0);
 }
 
+/*
+ * Regras da revendedora que valem para a maleta. Até o acerto valem as atuais
+ * do perfil; no acerto são copiadas para a maleta e ficam congeladas.
+ * Regra nova? Some aqui E na função settle_kit do banco (supabase/migrations).
+ */
+export const RULE_FIELDS = ['commission_pct', 'bonus_amount', 'goal_amount', 'goal_type'];
+export const pickRules = (src) => Object.fromEntries(RULE_FIELDS.map((f) => [f, src?.[f] ?? null]));
+export const kitRules = (kit, reseller) =>
+  kit.status === 'settled' ? pickRules(kit) : pickRules(reseller || kit.reseller);
+
+// Vendas contam no mês (horário de Brasília) em que a peça foi marcada como vendida
+export function soldItems(kits) {
+  return kits.flatMap((k) => k.items.filter((i) => i.sold && i.sold_at).map((i) => ({ ...i, kit: k, month: monthKey(i.sold_at) })));
+}
+
 export function kitTotals(kit, reseller) {
   const items = kit.items || [];
-  const settled = kit.status === 'settled';
-  const rules = settled
-    ? { commission_pct: kit.commission_pct, bonus_amount: kit.bonus_amount, goal_amount: kit.goal_amount, goal_type: kit.goal_type }
-    : reseller || kit.reseller || {};
+  const rules = kitRules(kit, reseller);
   const sold = items.filter((i) => i.sold);
   const total = items.reduce((s, i) => s + itemPrice(i), 0);
   const soldTotal = sold.reduce((s, i) => s + itemPrice(i), 0);

@@ -7,6 +7,8 @@
  */
 import { addDays, guessCategory, isEmail, normalizePhone, today } from './format';
 import { blobToDataUrl, prepareImage } from './image';
+import { checkPassword, DEFAULT_MIN_STOCK, minStockOf } from './rules';
+import { pickRules } from './calc';
 
 const KEY = 'barones-consignado-demo-v5';
 const listeners = new Set();
@@ -28,7 +30,7 @@ function seed() {
     rev('u-simone', 'Simone Alves', 'simone', 30, 0, 0),
   ];
   const pc = (id, code, name, cost, price, stock) => ({
-    id, brand_id: 'b1', code, name, photo_url: null, cost, price, stock_qty: stock, min_stock: 2, category: guessCategory(name) || 'outro',
+    id, brand_id: 'b1', code, name, photo_url: null, cost, price, stock_qty: stock, min_stock: DEFAULT_MIN_STOCK, category: guessCategory(name) || 'outro',
   });
   const pieces = [
     pc('p1', 'CL-031', 'Colar ponto de luz', 32, 89.9, 30),
@@ -50,8 +52,7 @@ function seed() {
       id: `k${n}`, brand_id: 'b1', number: n, reseller_id: reseller,
       sent_at: addDays(t, -sentDaysAgo), due_at: addDays(t, -sentDaysAgo + 30),
       status: settled ? 'settled' : 'open', adjust_amount: 0,
-      commission_pct: settled ? r.commission_pct : null, bonus_amount: settled ? r.bonus_amount : null,
-      goal_amount: settled ? r.goal_amount : null, goal_type: settled ? r.goal_type : null,
+      ...pickRules(settled ? r : null), // regras congeladas só no acerto
       settled_at: settled ? `${addDays(t, -sentDaysAgo + 30)}T15:00:00Z` : null,
       paid_at: paid ? `${addDays(t, -sentDaysAgo + 32)}T15:00:00Z` : null,
     };
@@ -79,7 +80,7 @@ function seed() {
   kit('u-carla', 14, full(0.75), false, false);
   kit('u-juliana', 10, full(0.6), false, false);
   kit('u-patricia', 6, full(0.4), false, false);
-  return { brand, profiles, pieces, kits, items, invites: [], session: null };
+  return { brand, profiles, pieces, kits, items, session: null };
 }
 
 function load() {
@@ -142,7 +143,7 @@ export function createDemoApi() {
         save();
       },
       async changePassword(password) {
-        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        checkPassword(password);
         me().password = password;
         save();
       },
@@ -172,7 +173,7 @@ export function createDemoApi() {
           code, name: p.name.trim(), photo_url: p.photo_url || null,
           cost: Number(p.cost) || 0, price: Number(p.price) || 0, stock_qty: Number(p.stock_qty) || 0,
           category: p.category || 'outro',
-          min_stock: Math.max(0, Math.floor(Number(p.min_stock ?? 2))),
+          min_stock: minStockOf(p),
         };
         if (p.id) Object.assign(piece(p.id), row);
         else db.pieces.push({ id: uid(), brand_id: 'b1', ...row });
@@ -215,7 +216,7 @@ export function createDemoApi() {
           if (db.profiles.some((p) => p.login?.toLowerCase() === rules.login.toLowerCase())) {
             throw new Error('Já existe um acesso com esse celular ou e-mail.');
           }
-          if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+          checkPassword(password);
           db.profiles.push({ id: uid(), brand_id: 'b1', role: 'reseller', active: true, password, ...rules });
         }
         save();
@@ -223,7 +224,7 @@ export function createDemoApi() {
       },
       async resetPassword(id, password) {
         guardAdmin();
-        if (!password || password.length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
+        checkPassword(password);
         db.profiles.find((p) => p.id === id).password = password;
         save();
       },
@@ -238,7 +239,7 @@ export function createDemoApi() {
         const number = Math.max(0, ...db.kits.map((k) => k.number)) + 1;
         const k = {
           id: uid(), brand_id: 'b1', number, reseller_id, sent_at, due_at: due_at || null, status: 'open',
-          adjust_amount: 0, commission_pct: null, bonus_amount: null, goal_amount: null, goal_type: null, settled_at: null, paid_at: null,
+          adjust_amount: 0, ...pickRules(null), settled_at: null, paid_at: null,
         };
         db.kits.push(k);
         save();
@@ -282,8 +283,7 @@ export function createDemoApi() {
         }
         Object.assign(k, {
           status: 'settled', settled_at: new Date().toISOString(), adjust_amount: Number(adjust) || 0,
-          commission_pct: r.commission_pct, bonus_amount: r.bonus_amount, goal_amount: r.goal_amount,
-          goal_type: r.goal_type,
+          ...pickRules(r),
         });
         save();
       },

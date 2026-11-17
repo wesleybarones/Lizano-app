@@ -7,7 +7,7 @@ import { brl } from '../../lib/format';
 import { currentKit } from './common';
 
 export default function Vender() {
-  const { kits, loaded } = useStore();
+  const { kits, loaded, brandName } = useStore();
   const nav = useNavigate();
   const { busy, error, run } = useAction();
   const [sel, setSel] = useState([]);
@@ -52,7 +52,7 @@ export default function Vender() {
       <button type="button" className="btn btn--primary" disabled={!sel.length || busy} onClick={confirmar}>
         {busy ? 'Confirmando…' : 'Confirmar venda'}
       </button>
-      <p className="note">A Lizano vê a venda na hora. O valor entra no seu próximo acerto.</p>
+      <p className="note">A {brandName} vê a venda na hora. O valor entra no seu próximo acerto.</p>
     </Screen>
   );
 }
