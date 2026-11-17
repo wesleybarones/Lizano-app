@@ -33,6 +33,7 @@ insert into public.piece_costs (piece_id, brand_id, cost)
 select id, brand_id, cost from public.pieces;
 
 alter table public.piece_costs enable row level security;
+grant select, insert, update, delete on public.piece_costs to authenticated;
 create policy piece_costs_admin on public.piece_costs for all
   using (public.is_admin() and brand_id = public.my_brand())
   with check (public.is_admin() and brand_id = public.my_brand());
