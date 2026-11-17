@@ -99,3 +99,33 @@ Sem internet, `npm ci` e `vite build` não rodaram aqui.
   - Modo demonstração: mesmo resultado em um roteiro completo (montar maleta → vender → acertar → cadastrar peça → senha curta).
 
 **Antes de juntar na main:** rode `npm ci && npm run build` e abra o app no modo demonstração. Confira Relatórios, Curva ABC e um PDF de comprovante.
+
+---
+
+## 7. Banco (C4) · `supabase/migrations/012_custo_estoque_limpeza.sql`
+
+| Mudança | No banco | No app | Itens |
+|---------|----------|--------|-------|
+| Custo só para o dono | Nova tabela `piece_costs` (RLS só do dono), custo copiado, `pieces.cost` removida | `api.pieces.list` junta o custo (vem vazio para a revendedora); `save` grava em `piece_costs`; demo esconde o custo da revendedora | G2 |
+| Estoque nunca negativo | `check (stock_qty >= 0)`; negativos zerados antes | Erro traduzido; montar maleta sem estoque desfaz a maleta vazia; demo faz a mesma checagem | G3 |
+| Peça vendida não volta ao estoque | Gatilho `kit_items_stock` confere `sold` | Demo igual | V8 |
+| `delete_kit` sem truque | O gatilho devolve as não vendidas da maleta aberta | — | G4 |
+| Fim dos convites | Remove gatilho, função e tabela `invites` | — | E1 |
+| Foto sai junto com a peça | Política de exclusão no Storage, só da própria marca | `api.pieces.remove` apaga a foto quando a peça é apagada de vez (arquivada mantém) | G6 |
+
+**Ordem de publicação:** rode a 012 no SQL Editor e publique o app logo depois. Nesse intervalo, o app antigo não consegue salvar peças (o resto funciona).
+Antes, rode a consulta comentada no topo do arquivo para ver se alguma peça tem estoque negativo.
+
+Ainda fora: G7 (código de peça arquivada bloqueado) e troca de foto (a foto antiga fica no Storage quando o dono troca a foto da peça).
+
+### Como a 012 foi verificada
+Num Postgres 16 local, com imitações mínimas do Supabase (`auth.users`, `auth.uid()`, `storage.objects`, papel `authenticated`), rodando 001 → 011, criando dados (incluindo uma peça com estoque negativo e uma maleta com peça vendida) e depois a 012:
+- Custos copiados; peça negativa zerada; convites e gatilho removidos.
+- Revendedora: 0 custos visíveis. Dono: lê e grava custo.
+- Pôr na maleta peça sem estoque: barrado (`pieces_stock_nonneg`).
+- Tirar peça vendida: estoque igual. Tirar não vendida: +1. Excluir maleta aberta: devolve uma vez só.
+- Acerto e exclusão de peça (apagada e arquivada) continuam funcionando.
+- Fotos: o dono apaga só da própria marca e a revendedora não apaga. O primeiro teste falhou porque apagar no Storage exige também a política de leitura; ela foi incluída e o teste passou.
+- Demo: mesmas regras (estoque insuficiente desfaz a maleta, vendida não volta, revendedora sem custo).
+
+Não testado de verdade: o Storage real do Supabase e o embed `piece_costs` pela API (PostgREST). Confira os dois no primeiro uso.

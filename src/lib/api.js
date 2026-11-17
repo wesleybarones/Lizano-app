@@ -73,26 +73,37 @@ function createSupabaseApi() {
     },
 
     pieces: {
+      // o custo fica em piece_costs, que só o dono lê (para a revendedora vem vazio)
       async list() {
-        return must(await sb.from('pieces').select('*').eq('archived', false).order('name'));
+        const rows = must(await sb.from('pieces').select('*, costs:piece_costs(cost)').eq('archived', false).order('name'));
+        return rows.map(({ costs, ...p }) => {
+          const c = Array.isArray(costs) ? costs[0] : costs;
+          return c ? { ...p, cost: Number(c.cost) || 0 } : p;
+        });
       },
       async save(p, brandId) {
         const row = {
           code: p.code.trim(),
           name: p.name.trim(),
           photo_url: p.photo_url || null,
-          cost: Number(p.cost) || 0,
           price: Number(p.price) || 0,
           stock_qty: Number(p.stock_qty) || 0,
           category: p.category || 'outro',
           min_stock: minStockOf(p),
         };
-        if (p.id) return must(await sb.from('pieces').update(row).eq('id', p.id).select().single());
-        return must(await sb.from('pieces').insert({ ...row, brand_id: brandId }).select().single());
+        const saved = p.id
+          ? must(await sb.from('pieces').update(row).eq('id', p.id).select().single())
+          : must(await sb.from('pieces').insert({ ...row, brand_id: brandId }).select().single());
+        must(await sb.from('piece_costs').upsert({ piece_id: saved.id, brand_id: saved.brand_id, cost: Number(p.cost) || 0 }));
+        return saved;
       },
-      // 'deleted' (apagada) ou 'archived' (tinha histórico: some das listas)
+      // 'deleted' (apagada, e a foto sai do Storage) ou 'archived' (tinha histórico: some das listas)
       async remove(id) {
-        return must(await sb.rpc('delete_piece', { p_piece: id }));
+        const pc = must(await sb.from('pieces').select('photo_url').eq('id', id).maybeSingle());
+        const r = must(await sb.rpc('delete_piece', { p_piece: id }));
+        const path = String(pc?.photo_url || '').split('/object/public/pecas/')[1];
+        if (r === 'deleted' && path) await sb.storage.from('pecas').remove([decodeURIComponent(path)]); // falhou? só sobra o arquivo
+        return r;
       },
       async uploadPhoto(file, brandId) {
         const jpg = await prepareImage(file);
@@ -148,7 +159,14 @@ function createSupabaseApi() {
         const kit = must(
           await sb.from('kits').insert({ brand_id: brandId, reseller_id, sent_at, due_at: due_at || null }).select().single(),
         );
-        if (pieceIds?.length) await this.addItems(kit.id, pieceIds, brandId);
+        if (pieceIds?.length) {
+          try {
+            await this.addItems(kit.id, pieceIds, brandId);
+          } catch (e) {
+            await sb.rpc('delete_kit', { p_kit: kit.id }); // não deixa maleta vazia para trás
+            throw e;
+          }
+        }
         return kit;
       },
       async addItems(kitId, pieceIds, brandId) {
@@ -186,6 +204,7 @@ function createSupabaseApi() {
 
 function traduz(msg = '') {
   if (/already registered|already exists|Já existe/i.test(msg)) return 'Já existe um acesso com esse celular ou e-mail.';
+  if (/pieces_stock_nonneg/i.test(msg)) return 'Uma das peças não tem mais estoque. Atualize a lista e tente de novo.';
   if (/duplicate key.*code/i.test(msg)) return 'Já existe uma peça com esse código.';
   if (/should be different/i.test(msg)) return 'A nova senha precisa ser diferente da atual.';
   if (/password/i.test(msg)) return `Senha inválida (mínimo de ${PASSWORD_MIN} caracteres).`;

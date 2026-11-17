@@ -161,7 +161,7 @@ export function createDemoApi() {
         if (isAdmin()) return wait(db.pieces.filter((p) => !p.archived).sort((a, b) => a.name.localeCompare(b.name)));
         const mine = new Set(db.kits.filter((k) => k.reseller_id === db.session).map((k) => k.id));
         const ids = new Set(db.items.filter((i) => mine.has(i.kit_id)).map((i) => i.piece_id));
-        return wait(db.pieces.filter((p) => ids.has(p.id)));
+        return wait(db.pieces.filter((p) => ids.has(p.id)).map(({ cost, ...p }) => p)); // custo só para o dono
       },
       async save(p) {
         guardAdmin();
@@ -243,11 +243,23 @@ export function createDemoApi() {
         };
         db.kits.push(k);
         save();
-        if (pieceIds?.length) await this.addItems(k.id, pieceIds);
+        if (pieceIds?.length) {
+          try {
+            await this.addItems(k.id, pieceIds);
+          } catch (e) {
+            await this.remove(k.id); // não deixa maleta vazia para trás
+            throw e;
+          }
+        }
         return wait(k);
       },
       async addItems(kitId, pieceIds) {
         guardAdmin();
+        const need = {};
+        for (const pid of pieceIds) need[pid] = (need[pid] || 0) + 1;
+        if (Object.entries(need).some(([pid, n]) => piece(pid).stock_qty < n)) {
+          throw new Error('Uma das peças não tem mais estoque. Atualize a lista e tente de novo.');
+        }
         for (const pid of pieceIds) {
           db.items.push({ id: uid(), kit_id: kitId, brand_id: 'b1', piece_id: pid, price: null, sold: false, sold_at: null });
           piece(pid).stock_qty -= 1;
@@ -258,7 +270,7 @@ export function createDemoApi() {
         guardAdmin();
         const it = db.items.find((i) => i.id === itemId);
         const k = db.kits.find((x) => x.id === it.kit_id);
-        if (k.status === 'open') piece(it.piece_id).stock_qty += 1;
+        if (k.status === 'open' && !it.sold) piece(it.piece_id).stock_qty += 1; // vendida não volta
         db.items = db.items.filter((i) => i.id !== itemId);
         save();
       },
